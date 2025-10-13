@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Footer</title>
+  <style>
+    /* === FOOTER BASE === */
+    .footer {
+      background-color: #1d173c;
+      color: #fff;
+      text-align: center;
+      padding: 60px 20px 0;
+      margin: 0; /* Prevents any outside margin affecting layout */
+    }
+
+    .footer-content {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    /* === LOGO AREA === */
+    .footer-logo {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-around;
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+
+    .footer-logo img {
+      width: 180px;
+      height: auto;
+    }
+
+    /* === FLEX WRAPPER FOR DESC + CONTACT === */
+    .footer-flex {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 40px;
+      margin-bottom: 50px;
+    }
+
+    /* === DESCRIPTION TEXT === */
+    .footer-desc {
+      color: #c9c9d9;
+      line-height: 1.8;
+      max-width: 500px;
+      font-size: 1rem;
+      margin: 0; /* prevents extra spacing */
+    }
+
+    /* === CONTACT SECTION === */
+    .footer-contact {
+      text-align: center;
+    }
+
+    .footer-contact h3 {
+      color: #fff;
+      font-weight: 600;
+      font-size: 1.3rem;
+      margin-bottom: 10px;
+    }
+
+    .footer-contact a {
+      color: #fff;
+      text-decoration: none;
+      font-size: 1.3rem;
+      transition: color 0.3s ease;
+    }
+
+    .footer-contact a:hover {
+      color: var(#c9c9d9);
+    }
+
+    /* === BUTTON === */
+    .footer-btn {
+      display: inline-block;
+      margin-top: 25px;
+      background-color: #493ea8;
+      padding: 12px 30px;
+      border-radius: 8px;
+      color: #fff;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 1rem;
+      transition: background 0.3s ease, transform 0.2s ease;
+    }
+
+    .footer-btn:hover {
+      background-color: #0b0270;
+      transform: translateY(-2px);
+    }
+
+    /* === COPYRIGHT BAR (FULL WIDTH EDGE-TO-EDGE) === */
+    .footer-bottom {
+      position: relative;
+      left: 50%;
+      right: 50%;
+      width: 100vw; /* Full viewport width */
+      margin-left: -50vw; /* Cancels out parent padding/margin */
+      margin-right: -50vw;
+      background: #22183e;
+      color: #fff;
+      font-size: 1rem;
+      padding: 15px 30px;
+      text-align: center;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      box-sizing: border-box;
+    }
+
+    /* === DESKTOP LAYOUT (min-width 900px) === */
+    @media (min-width: 900px) {
+      .footer-flex {
+        flex-direction: row;
+        align-items: flex-start;
+        justify-content: space-between;
+        text-align: left;
+      }
+
+      .footer-desc {
+        max-width: 50%;
+      }
+
+      .footer-contact {
+        text-align: right;
+      }
+
+      .footer-logo img {
+        width: 200px;
+      }
+
+      .footer-btn {
+        font-size: 1rem;
+        padding: 12px 32px;
+      }
+    }
+
+    /* === MOBILE LAYOUT (max-width 600px) === */
+    @media (max-width: 600px) {
+      .footer-logo img {
+        width: 140px;
+      }
+
+      .footer-desc {
+        font-size: 1rem;
+        line-height: 1.6;
+      }
+
+      .footer-contact h3 {
+        font-size: 1.2rem;
+      }
+
+      .footer-contact a {
+        font-size: 1rem;
+      }
+
+      .footer-btn {
+        display: block;
+        width: 100%;
+        max-width: 280px;
+        margin: 20px auto;
+        font-size: 1rem;
+        padding: 14px;
+      }
+
+      .footer-bottom {
+        font-size: 0.9rem;
+        padding: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <footer class="footer">
+    <div class="footer-content">
+      <div class="footer-logo">
+        <img src="/public/img/logistics2-copy.png" alt="RapidRoute Logo" />
+      </div>
+
+      <div class="footer-flex">
+        <p class="footer-desc">
+          We are dedicated to providing fast, secure, and reliable delivery
+          solutions for businesses and individuals. With a focus on efficiency
+          and customer satisfaction, we offer a comprehensive range of services —
+          from same-day local deliveries to international shipping.
+        </p>
+
+        <div class="footer-contact">
+          <h3>Any questions?</h3>
+          <p><a href="mailto:info@rapidrouteltd.com">info@rapidrouteltd.com</a></p>
+          <a href="contact.html" class="footer-btn">Get in touch →</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      © 2025 ConsignTrack. All rights reserved.
+    </div>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,130 @@
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Poppins", sans-serif;
+    }
+
+    body {
+      background-color: #f5f5f5;
+      color: #333;
+    }
+
+    /* ===== HEADER ===== */
+    header {
+      background: #43b02a;
+      padding: 20px;
+      text-align: center;
+    }
+
+    header img {
+      height: 45px;
+    }
+
+    /* ===== TRACKING BOX ===== */
+    .tracking-box {
+      background: #fff;
+      margin: 20px auto;
+      width: 90%;
+      max-width: 450px;
+      border-radius: 4px;
+      text-align: center;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .tracking-box h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin: 10px 0;
+      text-transform: uppercase;
+    }
+
+    .tracking-box .orange-section {
+      background: #f15a24;
+      padding: 20px;
+      border-radius: 3px;
+      margin-top: 20px;
+    }
+
+    .tracking-box label {
+      color: #fff;
+      font-style: italic;
+      font-size: 0.9rem;
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    .tracking-box input {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 3px;
+      font-size: 0.95rem;
+      margin-bottom: 10px;
+    }
+
+    .tracking-box button {
+      background: #e54d00;
+      color: #fff;
+      font-weight: 600;
+      border: none;
+      padding: 10px;
+      width: 100%;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .tracking-box button:hover {
+      background: #d63f00;
+    }
+
+    /* ===== INFO SECTIONS ===== */
+    .info-box {
+      background: #fff;
+      width: 90%;
+      max-width: 450px;
+      margin: 15px auto;
+      border-radius: 4px;
+      padding: 25px 20px;
+      text-align: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    }
+
+    .info-box img {
+      height: 60px;
+      margin-bottom: 10px;
+    }
+
+    .info-box h3 {
+      text-transform: uppercase;
+      color: #333;
+      font-size: 1rem;
+      margin-bottom: 8px;
+    }
+
+    .info-box p {
+      font-size: 0.9rem;
+      color: #555;
+      line-height: 1.6;
+      margin-bottom: 15px;
+    }
+
+    .info-box button {
+      background: #f15a24;
+      color: #fff;
+      border: none;
+      padding: 10px;
+      width: 100%;
+      border-radius: 3px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (min-width: 768px) {
+      .tracking-box, .info-box {
+        max-width: 500px;
+      }
+    }

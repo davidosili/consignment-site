@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About Us | Rapid Route Courier Services</title>
+  <link rel="stylesheet" href="landing.css" />
+  <style>
+
+    /* ========== RESET & BASE ========== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Poppins", system-ui, sans-serif;
+      background: #fff;
+      color: #111;
+      line-height: 1.7;
+      overflow-x: hidden;
+      font-size: clamp(0.85rem, 1.6vw, 1rem);
+    }
+
+    img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .general-container {
+      width: 100%;
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 0 4%;
+    }
+
+    /* ========== HERO ========== */
+    .hero {
+      position: relative;
+      min-height: 45vh;
+      background: url("./img/logistics2_hero_bg.jpg") center/cover no-repeat;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #fff;
+      text-align: center;
+      padding: 0 10px;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.55);
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      padding: 10px;
+    }
+
+    .hero-content h1 {
+      font-size: clamp(1.4rem, 5vw, 3rem);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      line-height: 1.2;
+    }
+
+    /* ========== ABOUT SECTION ========== */
+    .about-section {
+      padding: clamp(50px, 5vw, 80px) 20px;
+      max-width: 1100px;
+      margin: 0 auto;
+      text-align: justify;
+    }
+
+    .about-section h1 {
+      font-size: clamp(1.3rem, 3vw, 2.3rem);
+      margin-bottom: 20px;
+      color: #ff3366;
+      text-align: left;
+      line-height: 1.3;
+    }
+
+    .about-section p {
+      font-size: clamp(0.85rem, 2vw, 1rem);
+      color: #333;
+      margin-bottom: 16px;
+      line-height: 1.8;
+    }
+
+    /* ========== SERVICES SECTION ========== */
+    .services-section {
+      padding: clamp(50px, 5vw, 80px) 20px;
+      background: #f9f9f9;
+    }
+
+    .section-title {
+      font-size: clamp(1.3rem, 3vw, 2.2rem);
+      color: #ff3366;
+      margin-bottom: 40px;
+      text-align: center;
+      font-weight: 700;
+      line-height: 1.3;
+    }
+
+    .services-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 40px;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .service-item {
+      display: flex;
+      flex-direction: column;
+      max-width: 500px;
+      flex: 1 1 400px;
+    }
+
+    .service-item > img {
+      margin-bottom: 15px;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .service-item h3 {
+      font-size: clamp(1.1rem, 2.5vw, 1.5rem);
+      color: #e63946;
+      margin-bottom: 10px;
+      text-align: left;
+    }
+
+    .service-item p {
+      color: #444;
+      font-size: clamp(0.85rem, 2vw, 1rem);
+      line-height: 1.8;
+      text-align: justify;
+    }
+
+    /* ========== OUR STORY ========== */
+    .about {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 40px;
+      padding: clamp(50px, 5vw, 80px) 20px;
+    }
+
+    .about-img {
+      flex: 1 1 300px;
+      max-width: 500px;
+    }
+
+    .about-text {
+      flex: 1 1 400px;
+      max-width: 600px;
+    }
+
+    .about-text h2 {
+      font-size: clamp(1.3rem, 3vw, 2rem);
+      color: #e63946;
+      margin-bottom: 15px;
+      line-height: 1.3;
+    }
+
+    .about-text p {
+      font-size: clamp(0.85rem, 2vw, 1rem);
+      color: #444;
+      line-height: 1.8;
+      text-align: justify;
+    }
+
+    /* ========== RESPONSIVENESS ========== */
+    @media (max-width: 992px) {
+      .about {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .about-text h2 {
+        text-align: center;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .hero {
+        min-height: 35vh;
+      }
+
+      .hero-content h1 {
+        font-size: clamp(1rem, 4vw, 1.8rem);
+      }
+
+      .service-item h3 {
+        text-align: center;
+      }
+
+      .about-section, .services-section, .about {
+        padding: 40px 10px;
+      }
+
+      .services-list {
+        gap: 20px;
+      }
+    }
+
+    @media (max-width: 300px) {
+      body {
+        font-size: 12px;
+      }
+
+      .hero-content h1 {
+        font-size: 1rem;
+      }
+
+      .about-section h1,
+      .section-title,
+      .about-text h2 {
+        font-size: 1rem;
+      }
+
+      .about-section p,
+      .service-item p,
+      .about-text p {
+        font-size: 0.75rem;
+        line-height: 1.5;
+      }
+    }
+
+    /* ========== FEATURES SECTION ========== */
+.features-section {
+  background: #fff;
+  padding: 0 20px;
+}
+
+.features-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 40px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.feature-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  flex: 1 1 150px;
+  max-width: 220px;
+}
+
+.feature-item > img {
+  width: 70px;
+  height: 70px;
+  margin-bottom: 10px;
+  object-fit: contain;
+}
+
+.feature-item h3 {
+  font-size: clamp(0.9rem, 2vw, 1.1rem);
+  color: #1b1b3a;
+  font-weight: 600;
+}
+
+/* Responsive layout */
+@media (max-width: 768px) {
+  .features-container {
+    gap: 30px;
+  }
+
+  .feature-item img {
+    width: 60px;
+    height: 60px;
+  }
+
+  .feature-item h3 {
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .features-container {
+    flex-direction: column;
+  }
+
+  .feature-item {
+    max-width: 100%;
+  }
+}
+
+  </style>
+</head>
+
+<body>
+  <header id="navbar"></header>
+
+  <!-- HERO -->
+  <section class="hero reveal">
+    <div class="hero-content">
+      <h1>About Us</h1>
+    </div>
+  </section>
+
+  <div class="general-container reveal">
+    <!-- ABOUT SECTION -->
+    <section class="about-section">
+      <h1>Leading the Future of Courier Services</h1>
+      <p>
+        Founded on principles of speed, security, and customer satisfaction,
+        <strong>Rapid Route Courier Services</strong> is dedicated to revolutionizing the logistics industry.
+        With over a decade of experience, we provide a comprehensive range of courier services that cater to both individuals and businesses.
+      </p>
+      <p>
+        Our mission is to bridge the gap between businesses and their customers, ensuring that packages are delivered quickly, efficiently, and without hassle.
+      </p>
+      <p>
+        At Rapid Route, we value innovation and transparency. With our real-time tracking system, you can monitor your package every step of the way.
+      </p>
+    </section>
+
+    <!-- SERVICES SECTION -->
+    <section class="services-section reveal">
+      <h2 class="section-title">Our Expertise</h2>
+      <div class="services-list">
+        <div class="service-item">
+          <img src="./img/home_logistics2_pic18.jpg" alt="Fast & Professional Delivery" />
+          <h3>Fast & Professional</h3>
+          <p>
+            We offer quick and reliable delivery solutions tailored to your needs. Every package is handled with precision and delivered promptly by our professional team.
+          </p>
+        </div>
+
+        <div class="service-item reveal">
+          <img src="./img/home_logistics2_pic19.jpg" alt="Dedicated Team" />
+          <h3>Dedicated Team of Experts</h3>
+          <p>
+            Our success is built on a team of trained logistics professionals dedicated to excellence at every step — ensuring precision, care, and customer satisfaction.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- OUR STORY -->
+    <section id="about" class="about reveal">
+      <div class="about-img">
+        <img src="./img/air-qplcyzwe7y4rlzuiwk09780zgws6pudbbcvylp9zg4.jpeg" alt="Consignment Image" />
+      </div>
+      <div class="about-text">
+        <h2>From Local Beginnings to Global Excellence</h2>
+        <p>
+          At <strong>Rapid Route Courier Services,</strong> our story began with a vision to revolutionize the courier industry by providing faster, more reliable deliveries tailored to the needs of modern businesses and individuals.
+          Starting as a small local operation, we quickly grew by building trust through our unwavering commitment to timely and secure shipments. Today, we proudly serve a global clientele — staying true to our roots of personalized service while continuously innovating.
+        </p>
+      </div>
+    </section>
+  </div>
+
+  <!-- FEATURES SECTION -->
+<section class="features-section reveal">
+  <div class="features-container">
+    <div class="feature-item">
+      <img src="./img/home_logistics2_icon1.png" alt="24h Contact" />
+      <h3>Contact 24h</h3>
+    </div>
+
+    <div class="feature-item">
+      <img src="./img/home_logistics2_icon2.png" alt="Security of packages" />
+      <h3>Security of packages</h3>
+    </div>
+
+    <div class="feature-item">
+      <img src="./img/home_logistics2_icon3.png" alt="We have permissions" />
+      <h3>We have permissions</h3>
+    </div>
+
+    <div class="feature-item">
+      <img src="./img/home_logistics2_icon4.png" alt="Delivery on time" />
+      <h3>Delivery on time</h3>
+    </div>
+  </div>
+</section>
+
+
+  <div id="footer"></div>
+  
+
+  <script>
+    // Load navbar/footer dynamically
+    async function loadComponent(id, file) {
+      const res = await fetch(file);
+      const html = await res.text();
+      document.getElementById(id).innerHTML = html;
+    }
+
+    loadComponent('navbar', 'navbar.html');
+    loadComponent('footer', 'footer.html');
+
+    // Mobile navbar toggle
+    setTimeout(() => {
+      const menuToggle = document.getElementById("menuToggle");
+      const navMenu = document.getElementById("navMenu");
+      if (menuToggle && navMenu) {
+        menuToggle.addEventListener("click", (e) => {
+          e.stopPropagation();
+          navMenu.classList.toggle("active");
+          menuToggle.classList.toggle("open");
+        });
+
+        document.addEventListener("click", (e) => {
+          if (!navMenu.contains(e.target) && !menuToggle.contains(e.target)) {
+            navMenu.classList.remove("active");
+            menuToggle.classList.remove("open");
+          }
+        });
+      }
+    }, 400);
+
+     // Reveal on scroll
+        function reveal() {
+        const reveals = document.querySelectorAll(".reveal");
+        for (let i = 0; i < reveals.length; i++) {
+            const windowHeight = window.innerHeight;
+            const elementTop = reveals[i].getBoundingClientRect().top;
+            const elementVisible = 150;
+    
+            if (elementTop < windowHeight - elementVisible) {
+            reveals[i].classList.add("active");
+            } else {
+            reveals[i].classList.remove("active");
+            }
+        }
+        }
+    
+        window.addEventListener("scroll", reveal);
+        // To check the scroll position on page load
+        reveal();
+  </script>
+</body>
+</html>

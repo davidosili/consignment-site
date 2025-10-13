@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Track My Parcel | RapidRoute</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Poppins", sans-serif;
+    }
+
+    body {
+      background-color: #f5f5f5;
+      color: #333;
+      transition: all 0.3s ease-in-out;
+    }
+
+    header {
+      background: #43b02a;
+      padding: 15px 20px;
+      text-align: center;
+    }
+
+    header img {
+      height: 45px;
+    }
+
+    /* ===== MOBILE VIEW (DEFAULT) ===== */
+    main {
+      padding: 20px 0;
+    }
+
+    .tracking-box {
+      background: #fff;
+      margin: 20px auto;
+      width: 90%;
+      max-width: 450px;
+      border-radius: 5px;
+      text-align: center;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease;
+    }
+
+    .tracking-box:hover {
+      transform: translateY(-3px);
+    }
+
+    .tracking-box h2 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      margin: 10px 0;
+      text-transform: uppercase;
+    }
+
+    .orange-section {
+      background: #f15a24;
+      padding: 20px;
+      border-radius: 3px;
+      margin-top: 20px;
+    }
+
+    .orange-section label {
+      color: #fff;
+      font-style: italic;
+      font-size: 0.9rem;
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    .orange-section input {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 3px;
+      font-size: 0.95rem;
+      margin-bottom: 10px;
+    }
+
+    .orange-section button {
+      background: #e54d00;
+      color: #fff;
+      font-weight: 600;
+      border: none;
+      padding: 10px;
+      width: 100%;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .orange-section button:hover {
+      background: #d63f00;
+    }
+
+    .info-box {
+      background: #fff;
+      width: 90%;
+      max-width: 450px;
+      margin: 15px auto;
+      border-radius: 5px;
+      padding: 25px 20px;
+      text-align: center;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      transition: transform 0.3s ease;
+    }
+
+    .info-box:hover {
+      transform: translateY(-3px);
+    }
+
+    .info-icon {
+      width: 60px;
+      height: 60px;
+      fill: #f15a24;
+      margin-bottom: 10px;
+      transition: transform 0.3s ease, filter 0.3s ease;
+    }
+
+    .info-box:hover .info-icon {
+      animation: bounce 0.6s ease;
+      filter: brightness(1.2);
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      30% { transform: translateY(-8px); }
+      50% { transform: translateY(3px); }
+      70% { transform: translateY(-4px); }
+    }
+
+    .info-box h3 {
+      text-transform: uppercase;
+      color: #333;
+      font-size: 1rem;
+      margin-bottom: 8px;
+    }
+
+    .info-box p {
+      font-size: 0.9rem;
+      color: #555;
+      line-height: 1.6;
+      margin-bottom: 15px;
+    }
+
+    .info-box button {
+      background: #f15a24;
+      color: #fff;
+      border: none;
+      padding: 10px;
+      width: 100%;
+      border-radius: 3px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .info-box button:hover {
+      background: #d64a1e;
+    }
+
+    /* ===== PC VIEW (DESKTOP) ===== */
+    @media (min-width: 900px) {
+      body {
+        background: linear-gradient(135deg, #43b02a 40%, #f5f5f5 40%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      header {
+        background: transparent;
+        padding: 30px;
+      }
+
+      main {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 50px;
+        width: 100%;
+        padding: 60px 0;
+      }
+
+      .tracking-box {
+        width: 40%;
+        max-width: 550px;
+        text-align: left;
+        padding: 40px;
+        border-radius: 10px;
+      }
+
+      .tracking-box h2 {
+        font-size: 1.6rem;
+        color: #333;
+      }
+
+      .orange-section {
+        padding: 30px;
+        border-radius: 5px;
+      }
+
+      .info-section {
+        display: flex;
+        flex-direction: column;
+        gap: 25px;
+        width: 40%;
+        max-width: 500px;
+      }
+
+      .info-box {
+        padding: 30px;
+        border-radius: 8px;
+        text-align: left;
+      }
+
+      .info-box h3 {
+        font-size: 1.2rem;
+      }
+
+      .info-box p {
+        font-size: 0.95rem;
+      }
+
+      .info-box button {
+        width: 150px;
+        padding: 10px 15px;
+      }
+
+      .info-box svg {
+        float: left;
+        margin-right: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <img src="./img/logistics2-copy.png" alt="RapidRoute Logo" />
+  </header>
+
+  <main>
+    <section class="tracking-box">
+      <h2>Is it nearly there yet?</h2>
+      <div class="orange-section">
+        <label for="trackingInput">Enter your booking reference</label>
+        <input type="text" id="trackingInput" placeholder="CRJ-432304778" />
+        <button onclick="goToTrackingPage()">Track my parcel</button>
+      </div>
+    </section>
+
+    <div class="info-section">
+      <section class="info-box">
+        <svg xmlns="http://www.w3.org/2000/svg" class="info-icon" viewBox="0 0 24 24">
+          <path d="M21 16V8a1 1 0 0 0-.553-.894l-8-4a1 1 0 0 0-.894 0l-8 4A1 1 0 0 0 3 8v8a1 1 0 0 0 .553.894l8 4a1 1 0 0 0 .894 0l8-4A1 1 0 0 0 21 16zM12 20.382L5 17.118V9.618l7 3.264v7.5zm1-8.5-7-3.263 7-3.264 7 3.264-7 3.263z"/>
+        </svg>
+        <h3>Parcel not yet collected?</h3>
+        <p>Sorry, this doesn’t happen often — we’re sure there’s a good reason. If it’s after 6pm on the booked collection day, then reschedule a collection below.</p>
+        <button>Reschedule</button>
+      </section>
+
+      <section class="info-box">
+        <svg xmlns="http://www.w3.org/2000/svg" class="info-icon" viewBox="0 0 24 24">
+          <path d="M12 1a11 11 0 1 0 11 11A11.012 11.012 0 0 0 12 1zm0 20a9 9 0 1 1 9-9 9.01 9.01 0 0 1-9 9zm.5-14h-1v6l5.25 3.15.5-.84L12.5 13z"/>
+        </svg>
+        <h3>Need a fast answer?</h3>
+        <p>If you’ve got questions about your delivery, get in touch with our support team. But first, check out our FAQ page — the answer might be there.</p>
+        <button>Contact us</button>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    function goToTrackingPage() {
+      const trackingNumber = document.getElementById("trackingInput").value.trim();
+      if (!trackingNumber) {
+        alert("Please enter a tracking number");
+        return;
+      }
+      window.location.href = `tracking.html?number=${trackingNumber}`;
+    }
+  </script>
+</body>
+</html>

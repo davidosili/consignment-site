@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Our Services | Rapid Route Courier</title>
+  <link rel="stylesheet" href="landing.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    /* ======= GLOBAL ======= */
+    body {
+      margin: 0;
+      font-family: "Poppins", sans-serif;
+      color: #333;
+      background: #fff;
+      line-height: 1.6;
+      padding: 0;
+      margin: 0;
+    }
+
+    section {
+      padding: 60px 20px;
+      max-width: 1100px;
+      margin: auto;
+    }
+
+    h2 {
+      color: #e11d48;
+      font-size: 1.4rem;
+      margin-bottom: 15px;
+    }
+
+    p {
+      color: #555;
+    }
+
+    img {
+      width: 100%;
+      height: auto;
+    }
+
+    /* ======= HERO ======= */
+    .hero {
+      position: relative;
+      min-height: 45vh;
+      max-width: 100%;
+      background: url("./img/logistics2_hero_bg.jpg") center/cover no-repeat;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #fff;
+      text-align: center;
+      padding: 0 10px;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.55);
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero-content h1 {
+      font-size: clamp(1.6rem, 5vw, 3rem);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* ======= SERVICES ======= */
+    .service {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+      gap: 40px;
+      margin-bottom: 80px;
+    }
+
+    .service:nth-child(even) {
+      grid-template-columns: 1fr 1fr;
+      direction: rtl;
+    }
+
+    .service:nth-child(even) .service-content {
+      direction: ltr;
+    }
+
+    .service-content h2 {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .service-content i {
+      color: #334155;
+      font-size: 1.6rem;
+    }
+
+    /* ======= RESPONSIVE ======= */
+    @media (max-width: 768px) {
+      .service {
+        grid-template-columns: 1fr;
+        gap: 20px;
+        text-align: center;
+      }
+
+      .service:nth-child(even) {
+        direction: ltr;
+      }
+
+      .service-content h2 {
+        justify-content: center;
+      }
+    }
+
+    /* ======= SCROLL REVEAL ======= */
+    .reveal {
+      opacity: 0;
+      transform: translateY(50px);
+      transition: all 0.7s ease;
+    }
+
+    .reveal.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+
+<body>
+  <div id="navbar"></div>
+
+  <!-- HERO -->
+  <section class="hero reveal">
+    <div class="hero-content">
+      <h1>Our Services</h1>
+    </div>
+  </section>
+
+  <!-- SERVICES -->
+  <section>
+    <div class="service reveal">
+      <img src="./img/home_logistics2_icon9 (1).jpg" alt="Same-Day Delivery" />
+      <div class="service-content" ">
+        <h2><i class="fa-solid fa-truck-fast"></i> Same-Day Delivery</h2>
+        <p style="color: rgb(19, 19, 19);">
+          Our Same-Day Delivery service is crafted for clients who require swift, reliable shipping
+          solutions with a guaranteed turnaround time. We understand the importance of urgency in
+          today's fast-paced world, which is why we prioritize speed without compromising safety and
+          accuracy.
+        </p>
+      </div>
+    </div>
+
+    <div class="service reveal">
+      <img src="./img/home_logistics2_icon10 (1).jpg" alt="Express Delivery" />
+      <div class="service-content">
+        <h2><i class="fa-solid fa-plane-departure"></i> Express Delivery</h2>
+        <p style="color: #141414;">
+          Our Express Delivery service is tailored to meet the most urgent and time-sensitive
+          shipments. Utilizing advanced logistics and real-time tracking, we guarantee precision and
+          reliability to ensure every express shipment arrives on time, every time.
+        </p>
+      </div>
+    </div>
+
+    <div class="service reveal">
+      <img src="./img/home_logistics2_icon12.jpg" alt="International Shipping" />
+      <div class="service-content">
+        <h2><i class="fa-solid fa-ship"></i> International Shipping</h2>
+        <p style="color: #141414;">
+          Our International Shipping service simplifies the complexities of global logistics, ensuring
+          your packages reach destinations worldwide with speed and reliability. We manage customs
+          clearance, documentation, and end-to-end logistics so you can focus on your business.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <header id="footer"></header>
+
+  <script>
+    // Load Navbar and Footer
+    async function loadComponent(id, file) {
+      const res = await fetch(file);
+      const html = await res.text();
+      document.getElementById(id).innerHTML = html;
+    }
+    loadComponent("navbar", "navbar.html");
+    loadComponent("footer", "footer.html");
+
+    // Scroll reveal effect
+    function reveal() {
+      const reveals = document.querySelectorAll(".reveal");
+      for (let i = 0; i < reveals.length; i++) {
+        const windowHeight = window.innerHeight;
+        const revealTop = reveals[i].getBoundingClientRect().top;
+        const revealPoint = 100;
+
+        if (revealTop < windowHeight - revealPoint) {
+          reveals[i].classList.add("active");
+        } else {
+          reveals[i].classList.remove("active");
+        }
+      }
+    }
+    window.addEventListener("scroll", reveal);
+    reveal();
+
+        // Mobile navbar toggle
+    setTimeout(() => {
+      const menuToggle = document.getElementById("menuToggle");
+      const navMenu = document.getElementById("navMenu");
+      if (menuToggle && navMenu) {
+        menuToggle.addEventListener("click", (e) => {
+          e.stopPropagation();
+          navMenu.classList.toggle("active");
+          menuToggle.classList.toggle("open");
+        });
+
+        document.addEventListener("click", (e) => {
+          if (!navMenu.contains(e.target) && !menuToggle.contains(e.target)) {
+            navMenu.classList.remove("active");
+            menuToggle.classList.remove("open");
+          }
+        });
+      }
+    }, 400);
+  </script>
+</body>
+</html>

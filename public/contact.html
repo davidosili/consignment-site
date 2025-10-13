@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact Us - Rapid Route Courier</title>
+  <link rel="stylesheet" href="landing.css">
+  <style>
+    /* ========== RESET ========== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Poppins", system-ui, sans-serif;
+      background: #fff;
+      color: #111;
+      overflow-x: hidden;
+      line-height: 1.6;
+      --color-grey-blue: #2A264A;
+      --color-ash-light: #626262;
+    }
+
+    /* ========== HERO ========== */
+    .hero {
+      position: relative;
+      min-height: 40vh;
+      background: url("./img/logistics2_hero_bg.jpg") center/cover no-repeat;
+      display: flex;
+      align-items: center;
+      color: #fff;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.55);
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      padding: 2rem;
+    }
+
+    .hero-content h1 {
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* ========== CONTACT INFO SECTION ========== */
+    .contact-info {
+      display: flex;
+      justify-content: space-between;
+      align-items: stretch;
+      padding: 0;
+      background: #fff;
+      flex-wrap: wrap;
+    }
+
+    /* LEFT SIDE (Info Text with Background Image) */
+    .info-text {
+      flex: 1;
+      background: url("./img/home_logistics2_sectionbg4.jpg") center/cover no-repeat;
+      color: white;
+      padding: 60px 10%;
+      position: relative;
+    }
+
+    .info-text::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+    }
+
+    .info-text * {
+      position: relative;
+      z-index: 1;
+    }
+
+    .info-text h2 {
+      font-size: clamp(1.5rem, 2.5vw, 2rem);
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 25px;
+    }
+
+    .info-block {
+      margin-bottom: 20px;
+    }
+
+    .info-block p {
+      font-weight: 600;
+      color: var(--color-grey-blue);
+      font-size: clamp(1rem, 1.5vw, 1.1rem);
+    }
+
+    .info-block span,
+    .info-block a {
+      color: var(--color-ash-light);
+      text-decoration: none;
+      display: inline-block;
+      margin-top: 5px;
+      font-size: clamp(0.9rem, 1.3vw, 1rem);
+    }
+
+    /* RIGHT SIDE (Image beside info) */
+    .info-image {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #fff;
+      padding: 60px 10%;
+    }
+
+    .info-image img {
+      max-width: 400px;
+      width: 100%;
+      height: auto;
+    }
+
+    /* ========== ONLINE CONTACT FORM ========== */
+    .contact-form {
+      text-align: center;
+      padding: 60px 20px;
+      background: #fafafa;
+    }
+
+    .contact-form h2 {
+      font-size: clamp(1.8rem, 3vw, 2.2rem);
+      margin-bottom: 20px;
+    }
+
+    .contact-form h2 span {
+      color: #e63946;
+    }
+
+    .contact-form form {
+      display: flex;
+      flex-direction: column;
+      max-width: 500px;
+      margin: 0 auto;
+      gap: 15px;
+    }
+
+    .contact-form input,
+    .contact-form textarea {
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: clamp(0.9rem, 1.2vw, 1rem);
+      width: 100%;
+    }
+
+    .contact-form textarea {
+      min-height: 130px;
+      resize: vertical;
+    }
+
+    .contact-form button {
+      background: #e63946;
+      color: white;
+      padding: 12px;
+      border: none;
+      border-radius: 5px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .contact-form button:hover {
+      background: #c92030;
+    }
+
+    #formStatus {
+      margin-top: 15px;
+      font-weight: 500;
+    }
+
+    #formStatus.success {
+      color: green;
+    }
+
+    /* ========== RESPONSIVE DESIGN ========== */
+    @media (max-width: 900px) {
+      .contact-info {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .info-text {
+        padding: 40px 8%;
+        background-position: center;
+      }
+
+      .info-image {
+        padding: 30px 8%;
+      }
+
+      .info-image img {
+        max-width: 300px;
+        margin-top: 20px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .hero-content h1 {
+        font-size: 1.8rem;
+      }
+
+      .info-text h2 {
+        font-size: 1.5rem;
+      }
+
+      .contact-form {
+        padding: 40px 10px;
+      }
+
+      .contact-form form {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="navbar"></div>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1>Contact Us</h1>
+    </div>
+  </section>
+
+  <!-- CONTACT INFO -->
+  <section class="contact-info">
+    <div class="info-text">
+      <h2>Get in Touch:</h2>
+
+      <div class="info-block">
+        <p><strong>Address</strong></p>
+        <span>USA</span>
+      </div>
+
+      <div class="info-block">
+        <p><strong>Monday - Friday</strong></p>
+        <span>7:00 am – 6:00 pm</span>
+      </div>
+
+      <div class="info-block">
+        <p><strong>Saturday</strong></p>
+        <span>9:00 am – 5:00 pm</span>
+      </div>
+
+      <div class="info-block">
+        <p><strong>Write Us</strong></p>
+        <a href="mailto:info@rapidrouteltd.com">info@rapidrouteltd.com</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ONLINE CONTACT FORM -->
+  <section class="contact-form">
+    <h2>Online <span>Contact</span></h2>
+
+    <form id="contactForm" onsubmit="submitContact(event)">
+      <input type="text" id="name" placeholder="Your name" required>
+      <input type="email" id="email" placeholder="Your e-mail" required>
+      <input type="text" id="subject" placeholder="Subject" required>
+      <textarea id="message" placeholder="Message" required></textarea>
+      <button type="submit">Send a message</button>
+    </form>
+    <p id="formStatus"></p>
+  </section>
+
+  <div id="footer"></div>
+
+  <script>
+    // Load navbar/footer dynamically
+    async function loadComponent(id, file) {
+      const res = await fetch(file);
+      const html = await res.text();
+      document.getElementById(id).innerHTML = html;
+    }
+    loadComponent('navbar', 'navbar.html');
+    loadComponent('footer', 'footer.html');
+
+  const API_URL = "http://localhost:5000";
+
+  async function submitContact(e) {
+    e.preventDefault();
+    const msg = document.getElementById("formStatus");
+
+    const name = document.getElementById("name").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const subject = document.getElementById("subject").value.trim();
+    const message = document.getElementById("message").value.trim();
+
+    msg.textContent = "⏳ Sending...";
+    msg.classList.remove("success", "error");
+
+    try {
+      const res = await fetch(`${API_URL}/api/contact`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, subject, message })
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        msg.textContent = "✅ Message sent successfully!";
+        msg.classList.add("success");
+        document.getElementById("contactForm").reset();
+      } else {
+        msg.textContent = "❌ " + (data.error || "Something went wrong.");
+        msg.classList.add("error");
+      }
+    } catch (err) {
+      console.error(err);
+      msg.textContent = "⚠️ Network error. Try again later.";
+      msg.classList.add("error");
+    }
+  }
+
+        setTimeout(() => {
+      const menuToggle = document.getElementById("menuToggle");
+      const navMenu = document.getElementById("navMenu");
+      if (menuToggle && navMenu) {
+        menuToggle.addEventListener("click", (e) => {
+          e.stopPropagation();
+          navMenu.classList.toggle("active");
+          menuToggle.classList.toggle("open");
+        });
+
+        document.addEventListener("click", (e) => {
+          if (!navMenu.contains(e.target) && !menuToggle.contains(e.target)) {
+            navMenu.classList.remove("active");
+            menuToggle.classList.remove("open");
+          }
+        });
+      }
+    }, 400);
+  </script>
+</body>
+</html>

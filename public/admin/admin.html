@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel - Parcel Tracking</title>
+  <link rel="stylesheet" href="admin.css">
+  <style>
+    form {
+      display: grid;
+      gap: 12px;
+      margin-bottom: 30px;
+    }
+    fieldset {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 15px;
+      margin-bottom: 15px;
+    }
+    legend {
+      font-weight: bold;
+      padding: 0 8px;
+    }
+    input, select, button {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 14px;
+      width: 100%;
+    }
+    button {
+      background: #007BFF;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    .table-wrapper {
+      overflow-x: auto;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+    th {
+      background: #f4f4f4;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Admin Panel</h1>
+  </header>
+
+  <!-- Login Section -->
+  <section id="loginSection">
+    <h2>Admin Login</h2>
+    <input type="text" id="adminUser" placeholder="Username">
+    <input type="password" id="adminPass" placeholder="Password">
+    <button onclick="loginAdmin()">Login</button>
+    <p id="loginError" class="error"></p>
+  </section>
+
+  <!-- Dashboard Section -->
+  <section id="dashboard" class="hidden">
+    <h2>Create Tracking Entry</h2>
+    <form id="createForm" onsubmit="createTracking(event)">
+      
+      <!-- Sender Info -->
+      <fieldset>
+        <legend>Sender Information</legend>
+        <input type="text" id="senderName" placeholder="Sender Name" required>
+        <input type="text" id="senderAddress" placeholder="Sender Address">
+        <input type="tel" id="senderPhone" placeholder="Sender Phone">
+        <input type="email" id="senderEmail" placeholder="Sender Email">
+      </fieldset>
+
+      <!-- Receiver Info -->
+      <fieldset>
+        <legend>Receiver Information</legend>
+        <input type="text" id="receiverName" placeholder="Receiver Name" required>
+        <input type="text" id="receiverAddress" placeholder="Receiver Address">
+        <input type="tel" id="receiverPhone" placeholder="Receiver Phone">
+        <input type="text" id="receiverOffice" placeholder="Destination Office">
+        <input type="email" id="receiverEmail" placeholder="Sender Email">
+      </fieldset>
+
+      <!-- Route Info -->
+      <fieldset>
+        <legend>Route Information</legend>
+        <input type="text" id="origin" placeholder="Origin" required>
+        <input type="text" id="destination" placeholder="Destination" required>
+        <input type="text" id="currentLocation" placeholder="Current Location" required>
+        <input type="date" id="expectedDelivery" required>
+      </fieldset>
+
+      <!-- Status -->
+      <fieldset>
+        <legend>Status</legend>
+        <select id="status" required>
+          <option value="Pending">Pending</option>
+          <option value="In Transit">In Transit</option>
+          <option value="Out for Delivery">Out for Delivery</option>
+          <option value="Delivered">Delivered</option>
+        </select>
+      </fieldset>
+
+      <!-- Item Information -->
+      <fieldset id="itemsFieldset">
+        <legend>Item Information</legend>
+
+        <!-- Item Template -->     
+        <div class="itemRow">
+          <input type="text" name="itemId" placeholder="Unique Item ID" required>
+          <input type="text" name="itemName" placeholder="Item Name (e.g. Laptop)" required>
+          <input type="text" name="itemDescription" placeholder="Description">
+          <input type="number" name="itemWeight" step="0.01" placeholder="Weight (kg)">
+          <input type="number" name="itemQuantity" value="1" min="1">
+          <input type="number" name="itemCost" step="0.01" placeholder="Cost ($)" required>
+          <button type="button" onclick="removeItem(this)">Remove</button>
+        </div>
+
+        <button type="button" id="addItemBtn" onclick="addItem()">+ Add Another Item</button>
+      </fieldset>
+      <button type="submit">Create</button>
+    </form>
+    
+<h2>Create Shipment Link</h2>
+<form id="shipmentLinkForm" onsubmit="createShipmentLink(event)">
+  <fieldset>
+    <legend>Sender Details</legend>
+    <input type="text" id="linkSenderName" placeholder="Sender Name" required>
+    <input type="text" id="linkSenderEmail" placeholder="Sender Email">
+    <input type="text" id="linkSenderPhone" placeholder="Sender Phone">
+    <input type="text" id="linkSenderAddress" placeholder="Sender Address">
+  </fieldset>
+
+  <fieldset>
+    <legend>Route Information</legend>
+    <input type="text" id="linkOrigin" placeholder="Origin" required>
+    <input type="text" id="linkDestination" placeholder="Destination" required>
+  </fieldset>
+
+  <fieldset id="linkItemsFieldset">
+    <legend>Item Details</legend>
+    <!-- Item Template -->
+    <div class="linkItemRow">
+      <input type="text" name="linkItemName" placeholder="Item Name (e.g. Laptop)" required>
+      <input type="text" name="linkItemDesc" placeholder="Description">
+      <input type="number" name="linkItemWeight" placeholder="Weight (kg)">
+      <input type="number" name="linkItemQuantity" placeholder="Quantity" value="1" min="1">
+      <input type="number" name="linkItemCost" placeholder="Cost ($)" required>
+      <button type="button" onclick="removeLinkItem(this)">Remove</button>
+    </div>
+    <button type="button" id="addLinkItemBtn" onclick="addLinkItem()">+ Add Another Item</button>
+  </fieldset>
+
+  <button type="submit">Generate Link</button>
+</form>
+
+<div id="generatedLinkBox" class="hidden">
+  <p><strong>Share this link with receiver:</strong></p>
+  <input type="text" id="generatedLink" readonly style="width:100%;">
+  <button onclick="copyGeneratedLink()">Copy Link</button>
+</div>
+
+
+
+    <h2>All Tracking Entries</h2>
+    <div class="table-wrapper">
+      <table id="trackingTable">
+        <thead>
+          <tr>
+            <th>Tracking #</th>
+            <th>Sender</th>
+            <th>Receiver</th>
+            <th>Origin</th>
+            <th>Destination</th>
+            <th>Location</th>
+            <th>Status</th>
+            <th>Expected Delivery</th>
+            <th>Created At</th>
+            <th>Items</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <h2>Pending Shipment Approvals</h2>
+<div class="table-wrapper">
+  <table id="pendingTable">
+    <thead>
+      <tr>
+        <th>Temp ID</th>
+        <th>Sender</th>
+        <th>Receiver</th>
+        <th>Item</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+
+  <script src="admin.js"></script>
+</body>
+</html>

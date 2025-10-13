@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Receiver Sign-Up | Rapid Route</title>
+  <link rel="stylesheet" href="fill-receiver.css" />
+  <style>
+    /* ===== Loader ===== */
+
+dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: none;
+  padding: 0;
+  border-radius: 16px;
+  max-width: 420px;
+  width: 90%;
+  background: #fff;
+  animation: popIn 0.4s ease;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+  z-index: 1000; /* ensures it appears above everything else */
+}
+dialog::backdrop {
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(6px);
+}
+
+/* Container layout */
+.dialog-container {
+  padding: 30px 25px;
+  text-align: center;
+  font-family: "Inter", sans-serif;
+}
+
+/* Animated SVG */
+.dialog-icon {
+  width: 90px;
+  height: 90px;
+  margin: 0 auto 15px;
+}
+.circle-bg {
+  fill: none;
+  stroke: #e9ecef;
+  stroke-width: 8;
+}
+.circle-progress {
+  fill: none;
+  stroke: #007bff;
+  stroke-width: 8;
+  stroke-linecap: round;
+  stroke-dasharray: 339.29;
+  stroke-dashoffset: 339.29;
+  animation: drawCircle 1s ease-out forwards;
+}
+.checkmark {
+  fill: none;
+  stroke: #007bff;
+  stroke-width: 8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 60;
+  stroke-dashoffset: 60;
+  animation: drawCheck 0.5s ease-out 1s forwards;
+}
+
+/* Title and text */
+.dialog-title {
+  color: #007bff;
+  font-size: 1.4rem;
+  margin-top: 5px;
+  margin-bottom: 10px;
+}
+.dialog-text {
+  color: #444;
+  font-size: 0.95rem;
+  margin-bottom: 25px;
+  line-height: 1.4;
+}
+
+/* Buttons */
+.dialog-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+.dialog-buttons button {
+  background: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 18px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: 0.3s ease;
+}
+.dialog-buttons button:hover {
+  background: #0056b3;
+  transform: scale(1.05);
+}
+
+.icon-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+}
+
+.icon-btn svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+/* WhatsApp button style */
+.icon-btn.whatsapp {
+  background: #25D366;
+}
+.icon-btn.whatsapp:hover {
+  background: #1da851;
+}
+
+/* Email button style */
+.icon-btn.email {
+  background: #007bff;
+}
+.icon-btn.email:hover {
+  background: #0056b3;
+}
+
+
+/* Animations */
+@keyframes popIn {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+@keyframes drawCircle {
+  to { stroke-dashoffset: 0; }
+}
+@keyframes drawCheck {
+  to { stroke-dashoffset: 0; }
+}
+
+    .loader {
+      display: none;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #007bff;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <img class="logo" src="./img/logistics2-copy.png" alt="Logo">
+  </nav>
+
+  <main>
+    <div class="form-card">
+      <h2>Receiver Registration</h2>
+      <p class="subtitle">Please fill in the receiver’s details below</p>
+
+      <form id="receiverForm" onsubmit="submitReceiver(event)">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="receiverName">Full Name</label>
+            <input type="text" id="receiverName" placeholder="John Doe" required />
+          </div>
+
+          <div class="form-group">
+            <label for="receiverAddress">Address</label>
+            <input type="text" id="receiverAddress" placeholder="123 Example Street" required />
+          </div>
+
+          <div class="form-group">
+            <label for="receiverEmail">Email</label>
+            <input type="email" id="receiverEmail" placeholder="example@mail.com" required />
+          </div>
+
+          <div class="form-group">
+            <label for="receiverPhone">Phone Number</label>
+            <input type="tel" id="receiverPhone" placeholder="+234 801 234 5678" required />
+          </div>
+        </div>
+
+        <button type="submit">Submit Details</button>
+        <div class="loader" id="loader"></div>
+      </form>
+    </div>
+  </main>
+
+  <footer>
+    <p>© 2025 RapidRoute Logistics. All rights reserved.</p>
+  </footer>
+
+<dialog id="optionDialog">
+  <div class="dialog-container">
+    <div class="dialog-icon">
+      <!-- Animated SVG success check -->
+      <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+        <circle class="circle-bg" cx="60" cy="60" r="54" />
+        <circle class="circle-progress" cx="60" cy="60" r="54" />
+        <polyline class="checkmark" points="40,65 55,80 85,45" />
+      </svg>
+    </div>
+    <h2 class="dialog-title">Details Submitted Successfully!</h2>
+    <p class="dialog-text">To confirm your submission, please choose one of the options below:</p>
+    <div class="dialog-buttons">
+      <!-- WhatsApp Button -->
+      <button id="whatsappBtn" class="icon-btn whatsapp">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+          <path fill="white" d="M16 2C8.268 2 2 8.268 2 16a13.9 13.9 0 0 0 2.027 7.14L2 30l7.097-2.007A13.93 13.93 0 0 0 16 30c7.732 0 14-6.268 14-14S23.732 2 16 2z"/>
+          <path fill="#25D366" d="M25.003 6.997A11.948 11.948 0 0 0 16 4a12.01 12.01 0 0 0-10.486 17.702l-.68 2.469 2.52-.663A11.94 11.94 0 0 0 16 28a12 12 0 0 0 9.003-21.003zM16 26a9.94 9.94 0 0 1-5.07-1.366l-.363-.215-3.011.793.8-2.933-.236-.377A9.94 9.94 0 0 1 6 16c0-5.514 4.486-10 10-10s10 4.486 10 10-4.486 10-10 10z"/>
+          <path fill="white" d="M21.487 18.698c-.332-.166-1.966-.97-2.27-1.081-.305-.112-.527-.166-.75.166s-.861 1.081-1.057 1.305c-.194.223-.389.25-.72.083-.332-.166-1.4-.516-2.666-1.646a10.034 10.034 0 0 1-1.8-2.222c-.194-.333-.02-.512.146-.678.15-.15.332-.389.499-.583.166-.194.222-.333.332-.555.111-.222.056-.416-.028-.583-.083-.166-.75-1.806-1.027-2.472-.27-.647-.546-.559-.75-.57-.194-.008-.416-.01-.639-.01a1.234 1.234 0 0 0-.888.416c-.305.333-1.167 1.14-1.167 2.777s1.194 3.222 1.361 3.445c.166.223 2.348 3.584 5.692 5.026.796.343 1.417.546 1.902.698.8.255 1.527.219 2.104.133.643-.095 1.966-.803 2.243-1.579.277-.777.277-1.445.194-1.579-.084-.133-.305-.222-.639-.389z"/>
+        </svg>
+        Confirm via WhatsApp
+      </button>
+
+      <!-- Email Button -->
+      <button id="emailBtn" class="icon-btn email">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          <path fill="white" d="M20 4H4c-1.11 0-2 .9-2 2v12a2 
+          2 0 0 0 2 2h16a2 2 0 0 0 2-2V6c0-1.1-.89-2-2-2zm0 
+          4-8 5-8-5V6l8 5 8-5v2z"/>
+        </svg>
+        Confirm via Email
+      </button>
+    </div>
+  </div>
+</dialog>
+
+
+  <script>
+    const API_URL = "http://localhost:5000";
+    const loader = document.getElementById("loader");
+    const optionDialog = document.getElementById("optionDialog");
+
+    async function submitReceiver(event) {
+      event.preventDefault();
+      const urlParams = new URLSearchParams(window.location.search);
+      const id = urlParams.get("id");
+      if (!id) return alert("Invalid link.");
+
+      const receiver = {
+        name: document.getElementById("receiverName").value,
+        address: document.getElementById("receiverAddress").value,
+        email: document.getElementById("receiverEmail").value,
+        phone: document.getElementById("receiverPhone").value
+      };
+
+      loader.style.display = "block";
+      document.querySelector("button[type='submit']").disabled = true;
+
+      setTimeout(async () => {
+        try {
+          const res = await fetch(`${API_URL}/api/receiver/submit/${id}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ receiver })
+          });
+
+          loader.style.display = "none";
+          document.querySelector("button[type='submit']").disabled = false;
+
+          if (res.ok) {
+            document.getElementById("receiverForm").reset();
+            optionDialog.showModal(); // ✅ Show option dialog
+            setupOptionButtons(id, receiver); // ✅ Pass data
+          } else {
+            const data = await res.json();
+            alert("❌ Error: " + (data.error || "Submission failed"));
+          }
+        } catch (err) {
+          loader.style.display = "none";
+          alert("Network error. Please try again.");
+        }
+      }, 2000);
+    }
+
+    // ✅ Add handlers for WhatsApp or Email
+    function setupOptionButtons(id, receiver) {
+      const whatsappNumber = "2347058478793";
+      const message = `Hello Rapid Route Customer Care, I just submitted my receiver details. My Temp ID is ${id}. Please confirm.`;
+      const encodedMessage = encodeURIComponent(message);
+      const whatsappURL = `https://wa.me/${whatsappNumber}?text=${encodedMessage}`;
+
+      document.getElementById("whatsappBtn").onclick = () => {
+        window.open(whatsappURL, "_blank");
+        optionDialog.close();
+      };
+
+      document.getElementById("emailBtn").onclick = async () => {
+        try {
+          const res = await fetch(`${API_URL}/api/notify/email`, { // <-- backend route
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: receiver.email,
+              tempId: id,
+              name: receiver.name
+            })
+          });
+
+          if (res.ok) {
+            alert("✅ Email sent successfully!");
+            optionDialog.close();
+          } else {
+            alert("❌ Failed to send email.");
+          }
+        } catch (err) {
+          alert("Network error sending email.");
+        }
+      };
+    }
+  </script>
+</body>
+</html>
