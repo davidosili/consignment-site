@@ -1,6 +1,6 @@
 const BASE_URL = window.location.hostname === "localhost" 
   ? "http://localhost:5000"
-  : "https://api.rapidroute.com";
+  : "https://rapidroutesltd.onrender.com";
 
 let latestTrackingData = null; // store the last fetched tracking data
 

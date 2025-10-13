@@ -1,6 +1,6 @@
 const API_URL = window.location.hostname === "localhost"
   ? "http://localhost:5000"
-  : "https://api.rapidroute.com"; // replace with your production backend URL
+  : "https://rapidroutesltd.onrender.com"; // replace with your production backend URL
 
 // ------------------ LOGIN ------------------
 async function loginAdmin() {
