@@ -8,22 +8,56 @@ const path = require("path");
 const nodemailer = require("nodemailer");
 const notifyRoutes = require("./routes/notifyRoutes"); // ✅
 
+
 const Tracking = require("./models/Tracking.js");
 const Admin = require("./models/Admin.js");
 
 const app = express();
 app.use(express.json());
 
+const BASE_URL = process.env.BASE_URL || "http://localhost:5000";
 
 // CORS (keep for API testing via Postman, but won't matter if frontend is served from same origin)
-app.use(cors());
+const allowedOrigins = [
+  "http://localhost:5000",
+  "https://rapidroutesltd.onrender.com"
+];
+
+app.use(cors({
+  origin: function(origin, callback) {
+    // allow requests with no origin like mobile apps or Postman
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = `CORS policy: This origin is not allowed: ${origin}`;
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
+}));
+
 
 app.use("/api/notify", notifyRoutes);
 
 // MongoDB connection
-mongoose.connect("mongodb://localhost:27017/consignment");
+const MONGO_URI = process.env.MONGO_URI;
+const SECRET = process.env.SECRET;
 
-const SECRET = "supersecret"; // move to .env in production
+if (!MONGO_URI) {
+  console.error("❌ MONGO_URI is missing in .env");
+  process.exit(1);
+}
+
+if (!SECRET) {
+  console.error("❌ SECRET is missing in .env");
+  process.exit(1);
+}
+
+mongoose.connect(MONGO_URI)
+.then(() => console.log("✅ MongoDB connected"))
+.catch((err) => {
+  console.error("❌ MongoDB connection error:", err);
+  process.exit(1);
+});
 
 // Middleware to protect admin routes
 const authMiddleware = (req, res, next) => {
@@ -72,8 +106,6 @@ app.get("/api/tracking/:trackingNumber", async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
-
-
 // ---------------- ADMIN AUTH ----------------
 
 // Signup (only run once or protect later)
@@ -108,7 +140,6 @@ app.post("/api/admin/login", async (req, res) => {
 });
 
 // ---------------- ADMIN-ONLY ROUTES ----------------
-
 app.post("/api/admin/tracking", authMiddleware, async (req, res) => {
   try {
     const {
@@ -151,7 +182,6 @@ app.post("/api/admin/tracking", authMiddleware, async (req, res) => {
   }
 });
 
-
 // ✅ Update tracking status
 app.put("/api/admin/tracking/number/:trackingNumber", authMiddleware, async (req, res) => {
   try {
@@ -183,9 +213,6 @@ app.put("/api/admin/tracking/number/:trackingNumber", authMiddleware, async (req
   }
 });
 
-
-
-
 // Get all tracking entries
 app.get("/api/admin/tracking", authMiddleware, async (req, res) => {
   const entries = await Tracking.find().sort({ createdAt: -1 });
@@ -207,14 +234,13 @@ app.get("/api/admin/pending-shipments", authMiddleware, async (req, res) => {
   res.json(shipments);
 });
 
-// Approve shipment → convert TempShipment → Tracking
-
 // Reject shipment
 app.delete("/api/admin/reject-shipment/:id", authMiddleware, async (req, res) => {
   await TempShipment.findByIdAndDelete(req.params.id);
   res.json({ message: "Rejected successfully" });
 });
 
+// Approve shipment → convert TempShipment → Tracking
 app.post("/api/admin/approve-shipment/:id", authMiddleware, async (req, res) => {
   try {
     const temp = await TempShipment.findById(req.params.id);
@@ -269,7 +295,7 @@ app.post("/api/admin/approve-shipment/:id", authMiddleware, async (req, res) => 
           <p><b>Origin:</b> ${newTracking.origin}</p>
           <p><b>Destination:</b> ${newTracking.destination}</p>
           <p>You can track your shipment anytime at:</p>
-          <a href="http://localhost:5000/tracking.html?num=${newTracking.trackingNumber}">
+          <a href="${BASE_URL}/tracking.html?num=${newTracking.trackingNumber}">
             Track Package
           </a>
           <br><br>
@@ -310,7 +336,6 @@ app.post("/api/receiver/submit/:id", async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
-
 
 // ------------------ CREATE TEMP SHIPMENT LINK (MULTI-ITEM SUPPORT) ------------------
 app.post("/api/admin/shipment-link", authMiddleware, async (req, res) => {
@@ -365,8 +390,6 @@ app.post("/api/admin/shipment-link", authMiddleware, async (req, res) => {
   }
 });
 
-
-
 // ------------------ CONTACT FORM ROUTE ------------------
 app.post("/api/contact", async (req, res) => {
   const { name, email, subject, message } = req.body;
@@ -384,7 +407,6 @@ app.post("/api/contact", async (req, res) => {
         pass: process.env.EMAIL_PASS,
       },
     });
-
 
     const mailOptions = {
       from: `"Rapid Route Courier" <${process.env.EMAIL_USER}>`,
@@ -406,18 +428,18 @@ ${message}
   }
 });
 
-
-
-
 // ---------------- SERVE FRONTEND ----------------
 
 // Serve everything inside /public folder (put index.html, admin.html, admin.js, styles, etc. there)
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(path.join(__dirname, "../public")));
 
-// If you want SPA routing fallback (optional)
- // app.get("*", (req, res) => {
-   //bres.sendFile(path.join(__dirname, "public", "landing.html"));
- //});
+
+// Serve landing.html as the default page
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "../public/landing.html"));
+});
 
 // ---------------- SERVER ----------------
-app.listen(5000, () => console.log("🚀 Server + Frontend running at http://localhost:5000"));
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => console.log(`🚀 Server + Frontend running at http://localhost:${PORT}`));

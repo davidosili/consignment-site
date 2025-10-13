@@ -4,9 +4,25 @@ const router = express.Router();
 const axios = require("axios");
 require("dotenv").config();
 
+// --- Google Cloud Translate Setup ---
+const { Translate } = require("@google-cloud/translate").v2;
+const translate = new Translate({ key: process.env.GOOGLE_API_KEY });
+
+async function translateText(text, targetLang) {
+  if (!targetLang || targetLang === "en") return text; // no translation needed
+  try {
+    const [translation] = await translate.translate(text, targetLang);
+    return translation;
+  } catch (err) {
+    console.error("Translation error:", err);
+    return text; // fallback to original
+  }
+}
+
+// ---------------- POST /email ----------------
 router.post("/email", async (req, res) => {
   try {
-    const { email, tempId, name } = req.body;
+    const { email, tempId, name, language } = req.body;
     if (!email || !tempId || !name)
       return res.status(400).json({ error: "Missing required fields" });
 
@@ -15,8 +31,8 @@ router.post("/email", async (req, res) => {
     const SENDER_NAME = process.env.BREVO_SENDER_NAME || "Rapid Route Logistics";
     const LOGO_URL = process.env.BREVO_LOGO_URL;
 
-    // ✅ Updated HTML Email Template
-    const htmlContent = `
+    // ---------------- Prepare email content ----------------
+    let htmlContent = `
       <div style="font-family:Arial,sans-serif;background:#f6f8fa;padding:20px;">
         <div style="max-width:600px;margin:auto;background:white;border-radius:10px;overflow:hidden;">
           <div style="background:#007bff;padding:15px;text-align:center;">
@@ -55,18 +71,25 @@ router.post("/email", async (req, res) => {
       </div>
     `;
 
+    let subject = "Action Required: Complete Your Shipment Payment";
+
+    // ---------------- Translate if needed ----------------
+    htmlContent = await translateText(htmlContent, language);
+    subject = await translateText(subject, language);
+
+    // ---------------- Send via Brevo ----------------
     const msg = {
       sender: { email: SENDER_EMAIL, name: SENDER_NAME },
       to: [{ email }],
-      subject: "Action Required: Complete Your Shipment Payment",
-      htmlContent
+      subject,
+      htmlContent,
     };
 
     await axios.post("https://api.brevo.com/v3/smtp/email", msg, {
       headers: {
         "api-key": BREVO_KEY,
-        "Content-Type": "application/json"
-      }
+        "Content-Type": "application/json",
+      },
     });
 
     res.json({ success: true });
