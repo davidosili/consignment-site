@@ -1,3 +1,7 @@
+const BASE_URL = window.location.hostname === "localhost" 
+  ? "http://localhost:5000"
+  : "https://api.rapidroute.com";
+
 let latestTrackingData = null; // store the last fetched tracking data
 
 async function loadTrackingInfo() {
@@ -11,7 +15,7 @@ async function loadTrackingInfo() {
   }
 
   try {
-    const response = await fetch(`http://localhost:5000/api/tracking/${trackingNumber}`);
+    const response = await fetch(`${BASE_URL}/api/tracking/${trackingNumber}`);
     const data = await response.json();
 
     if (response.ok) {
@@ -313,23 +317,14 @@ companyInfo.forEach(line => {
   ]);
 
   doc.autoTable({
-    startY: y + 4,
-    head: [["Qty", "Type of Shipment", "Product", "Description", "Total Cost"]],
-    body: tableData,
-    styles: { font: "helvetica", fontSize: 10, cellPadding: 3 },
-    headStyles: {
-      fillColor: [60, 60, 243],
-      textColor: 255,
-      fontStyle: "bold"
-    },
-    columnStyles: {
-      0: { cellWidth: 20 },
-      1: { cellWidth: 40 },
-      2: { cellWidth: 40 },
-      3: { cellWidth: 55 },
-      4: { cellWidth: 30, halign: "right" }
-    }
+      startY: y + 4,
+      head: [["Qty", "Type of Shipment", "Product", "Description", "Total Cost"]],
+      body: tableData,
+      styles: { font: "helvetica", fontSize: 10, cellPadding: 3 },
+      headStyles: { fillColor: [60, 60, 243], textColor: 255, fontStyle: "bold" },
+      tableWidth: 'auto'
   });
+
 
   y = doc.lastAutoTable.finalY + 15;
 

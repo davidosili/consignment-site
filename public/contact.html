@@ -294,7 +294,9 @@
     loadComponent('navbar', 'navbar.html');
     loadComponent('footer', 'footer.html');
 
-  const API_URL = "http://localhost:5000";
+  const API_URL = window.location.hostname === "localhost"
+    ? "http://localhost:5000"
+    : "https://api.rapidroute.com"; // replace with your production backend URL
 
   async function submitContact(e) {
     e.preventDefault();

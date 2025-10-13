@@ -1,4 +1,6 @@
-const API_URL = "http://localhost:5000";
+const API_URL = window.location.hostname === "localhost"
+  ? "http://localhost:5000"
+  : "https://api.rapidroute.com"; // replace with your production backend URL
 
 // ------------------ LOGIN ------------------
 async function loginAdmin() {
@@ -406,7 +408,7 @@ async function createShipmentLink(event) {
     const data = await res.json();
     if (!res.ok) return alert(data.error || "Error creating link");
 
-    const link = `${window.location.origin}/public/fill-receiver.html?id=${data.tempId}`;
+    const link = `${API_URL}/fill-receiver.html?id=${data.tempId}`;
     document.getElementById("generatedLinkBox").classList.remove("hidden");
     document.getElementById("generatedLink").value = link;
 

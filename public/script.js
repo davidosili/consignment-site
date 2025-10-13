@@ -1,3 +1,5 @@
+const BASE_URL = "https://rapidroutesltd.onrender.com" || "http://localhost:5000";
+
 async function trackParcel() {
   const trackingNumber = document.getElementById("trackingInput").value.trim();
   const resultBox = document.getElementById("trackingResult");
@@ -8,7 +10,7 @@ async function trackParcel() {
   }
 
   try {
-    const response = await fetch(`http://localhost:5000/api/tracking/${trackingNumber}`);
+    const response = await fetch(`${BASE_URL}/api/tracking/${trackingNumber}`);
     const data = await response.json();
 
     if (response.ok) {
