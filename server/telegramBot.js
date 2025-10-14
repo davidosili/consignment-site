@@ -5,7 +5,14 @@ const TelegramBot = require("node-telegram-bot-api");
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const ADMIN_CHAT_ID = process.env.ADMIN_CHAT_ID; // your Telegram user ID
 
-const bot = new TelegramBot(BOT_TOKEN, { polling: true });
+const bot = new TelegramBot(BOT_TOKEN);
+bot.setWebHook('https://rapidroutesltd.onrender.com/bot' + BOT_TOKEN);
+
+app.post('/bot' + BOT_TOKEN, (req, res) => {
+  bot.processUpdate(req.body);
+  res.sendStatus(200);
+});
+
 
 // Temporary mapping of tempId <-> Telegram chat ID
 const userMap = new Map();
