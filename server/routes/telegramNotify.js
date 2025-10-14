@@ -10,15 +10,17 @@ router.post('/telegram', async (req, res) => {
   try {
     const { tempId, name, email, phone, address } = req.body;
 
-    const msgToAdmin = `📦 New Receiver Submission
-━━━━━━━━━━━━━━━
-👤 Name: ${name}
-📧 Email: ${email}
-📞 Phone: ${phone}
-🏠 Address: ${address}
-🆔 Temp ID: ${tempId}`;
+    const msgToAdmin = `
+    📦 *New Receiver Submission*
+    ━━━━━━━━━━━━━━━
+    👤 *Name:* ${name}
+    📧 *Email:* ${email}
+    📞 *Phone:* ${phone}
+    🏠 *Address:* ${address}
+    🆔 *Temp ID:* ${tempId}
+    `;
+    await bot.sendMessage(adminId, msgToAdmin, { parse_mode: "Markdown" });
 
-    await bot.sendMessage(adminId, msgToAdmin);
 
     // Optional: send message to user if already linked
     try {
@@ -37,5 +39,6 @@ router.post('/telegram', async (req, res) => {
     res.status(500).json({ error: "Failed to send Telegram message" });
   }
 });
+
 
 module.exports = router;

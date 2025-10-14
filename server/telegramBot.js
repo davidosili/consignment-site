@@ -91,3 +91,11 @@ bot.on("message", (msg) => {
 });
 
 console.log("🤖 Telegram bot is running...");
+
+function sendMessageToUser(tempId, message) {
+  const userChatId = userMap.get(tempId);
+  if (!userChatId) throw new Error(`No Telegram chat linked for ${tempId}`);
+  return bot.sendMessage(userChatId, message);
+}
+
+module.exports = { bot, sendMessageToUser };
