@@ -430,14 +430,14 @@ ${message}
 
 // ---------------- SERVE FRONTEND ----------------
 
-// Serve everything inside /public folder (put index.html, admin.html, admin.js, styles, etc. there)
-app.use(express.static(path.join(__dirname, "../public")));
-
-
 // Serve landing.html as the default page
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "../public/landing.html"));
 });
+
+// Then serve everything inside /public folder (for JS, CSS, images, etc.)
+app.use(express.static(path.join(__dirname, "../public")));
+
 
 // Use your Render URL here
 const SELF_URL = "https://rapidroutesltd.onrender.com/";
