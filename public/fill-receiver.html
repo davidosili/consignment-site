@@ -302,13 +302,13 @@ window.alert = function (message) {
 
     // ✅ Add handlers for telegram or Email
     function setupOptionButtons(id, receiver) {
-      const telegramUsername = "RapidRoutesSupport"; // <-- Replace with your Telegram @username or group username
+      const telegramUsername = "@Rapidroutesltd"; // <-- Replace with your Telegram @username or group username
       const message = `Hello Rapid Route Support, I just submitted my receiver details. My Temp ID is ${id}. Please confirm.`;
       const encodedMessage = encodeURIComponent(message);
 
       // For personal or public group chats: https://t.me/username
       // For direct message (via web): https://t.me/username?text=...
-      const telegramURL = `https://t.me/${Rapidroutesltd}?text=${encodedMessage}`;
+      const telegramURL = `https://t.me/${telegramUsername}?text=${encodedMessage}`;
 
       document.getElementById("telegramBtn").onclick = () => {
         window.open(telegramURL, "_blank");
