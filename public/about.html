@@ -303,7 +303,19 @@
 </head>
 
 <body>
-  <header id="navbar"></header>
+  <header class="navbar">
+    <a href="landing.html">
+      <img src="./img/logistics2-copy.png" alt="logo" class="logo">
+    </a>
+    <nav class="nav-links" id="navMenu">
+      <a href="index.html" class="btn-primary" style="text-align: center;">Track shipments</a>
+      <a href="landing.html">Home</a>
+      <a href="about.html">About</a>
+      <a href="services.html">Services</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+    <div class="menu-toggle" id="menuToggle" style="color: #d84659" >☰</div>
+  </header>
 
   <!-- HERO -->
   <section class="hero reveal">
@@ -403,7 +415,7 @@
       document.getElementById(id).innerHTML = html;
     }
 
-    loadComponent('navbar', 'navbar.html');
+ 
     loadComponent('footer', 'footer.html');
 
     // Mobile navbar toggle
@@ -445,6 +457,27 @@
         window.addEventListener("scroll", reveal);
         // To check the scroll position on page load
         reveal();
+
+        const menuToggle = document.getElementById("menuToggle");
+        const navMenu = document.getElementById("navMenu");
+
+    // Toggle open/close when clicking the menu button
+    menuToggle.addEventListener("click", (e) => {
+      e.stopPropagation(); // prevent this click from closing it immediately
+      navMenu.classList.toggle("active");
+      menuToggle.classList.toggle("open");
+    });
+
+    // Close the menu when clicking anywhere outside of it
+    document.addEventListener("click", (e) => {
+      const isClickInsideMenu = navMenu.contains(e.target);
+      const isClickOnToggle = menuToggle.contains(e.target);
+
+      if (!isClickInsideMenu && !isClickOnToggle) {
+        navMenu.classList.remove("active");
+        menuToggle.classList.remove("open");
+      }
+    });
   </script>
 </body>
 </html>
