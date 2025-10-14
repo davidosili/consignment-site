@@ -197,8 +197,8 @@ dialog::backdrop {
     </div>
   </main>
 
-  <footer>
-    <p>© 2021 RapidRoute Logistics. All rights reserved.</p>
+  <!-- ===== FOOTER ===== -->
+  <footer class="footer reveal" id="footer">
   </footer>
 
 <dialog id="optionDialog">
@@ -242,6 +242,16 @@ dialog::backdrop {
 </dialog>
 
   <script>
+
+        async function loadComponent(id, file) {
+      const res = await fetch(file);
+      const html = await res.text();
+      document.getElementById(id).innerHTML = html;
+    }
+
+    loadComponent('navbar', 'navbar.html');
+    loadComponent('footer', 'footer.html');
+   
 const API_URL =
   window.location.hostname === "localhost"
     ? "http://localhost:5000"
