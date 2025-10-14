@@ -42,7 +42,6 @@ app.use(cors({
   },
 }));
 
-
 app.use("/api/notify", notifyRoutes);
 
 const { bot } = require('./telegramBot');
@@ -50,7 +49,6 @@ app.post(`/bot${process.env.TELEGRAM_BOT_TOKEN}`, (req, res) => {
   bot.processUpdate(req.body);
   res.sendStatus(200);
 });
-
 
 // MongoDB connection
 const MONGO_URI = process.env.MONGO_URI;
@@ -123,7 +121,7 @@ app.get("/api/tracking/:trackingNumber", async (req, res) => {
 });
 // ---------------- ADMIN AUTH ----------------
 
-// Signup (only run once or protect later)
+// Signup 
 app.post("/api/admin/signup", async (req, res) => {
   const { username, password } = req.body;
 
