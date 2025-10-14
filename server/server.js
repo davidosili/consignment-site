@@ -10,7 +10,6 @@ const nodemailer = require("nodemailer");
 const notifyRoutes = require("./routes/notifyRoutes"); // ✅
 const telegramNotify = require('./routes/telegramNotify');
 
-const express = require("express");
 const bodyParser = require("body-parser");
 const { setupWebhook } = require("./telegramBot");
 
