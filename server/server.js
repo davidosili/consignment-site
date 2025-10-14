@@ -21,7 +21,8 @@ const BASE_URL = process.env.BASE_URL || "http://localhost:5000";
 const allowedOrigins = [
   "http://localhost:5000",
   "https://rapidroutesltd.onrender.com", // Render domain (still valid fallback)
-  "https://rapidroutesltd.com",          // ✅ Your custom domain
+  "https://rapidroutesltd.com",   
+  "https://www.rapidroutesltd.com",// ✅ Your custom domain
 ];
 
 
