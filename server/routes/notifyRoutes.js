@@ -42,7 +42,7 @@ router.post("/email", async (req, res) => {
           <div style="padding:25px;">
             <h2 style="color:#007bff;">Receiver Details Received</h2>
             <p>Hello <strong>${name}</strong>,</p>
-            <p>We’ve successfully received your receiver details linked to the shipment below:</p>
+            <p>We’ve successfully received your details linked to the shipment below:</p>
             <h3 style="color:#007bff;text-align:center;">${tempId}</h3>
 
             <p>

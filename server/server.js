@@ -8,6 +8,7 @@ const cors = require("cors");
 const path = require("path");
 const nodemailer = require("nodemailer");
 const notifyRoutes = require("./routes/notifyRoutes"); // ✅
+const telegramNotify = require('./routes/telegramNotify');
 
 
 const Tracking = require("./models/Tracking.js");
@@ -15,6 +16,7 @@ const Admin = require("./models/Admin.js");
 
 const app = express();
 app.use(express.json());
+app.use('/api/notify', telegramNotify);
 
 const BASE_URL = process.env.BASE_URL || "http://localhost:5000";
 

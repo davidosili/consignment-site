@@ -249,89 +249,88 @@ const API_URL =
     ? "https://rapidroutesltd.com"
     : "https://rapidroutesltd.onrender.com";
 
-    const loader = document.getElementById("loader");
-    const optionDialog = document.getElementById("optionDialog");
+const loader = document.getElementById("loader");
+const optionDialog = document.getElementById("optionDialog");
 
-    async function submitReceiver(event) {
-      event.preventDefault();
-      const urlParams = new URLSearchParams(window.location.search);
-      const id = urlParams.get("id");
-      if (!id) return alert("Invalid link.");
+// Global vars to hold current submission data
+let currentId = null;
+let currentReceiver = null;
 
-      const receiver = {
-        name: document.getElementById("receiverName").value,
-        address: document.getElementById("receiverAddress").value,
-        email: document.getElementById("receiverEmail").value,
-        phone: document.getElementById("receiverPhone").value
-      };
+async function submitReceiver(event) {
+  event.preventDefault();
+  const urlParams = new URLSearchParams(window.location.search);
+  const id = urlParams.get("id");
+  if (!id) return alert("Invalid link.");
 
-      loader.style.display = "block";
-      document.querySelector("button[type='submit']").disabled = true;
+  const receiver = {
+    name: document.getElementById("receiverName").value,
+    address: document.getElementById("receiverAddress").value,
+    email: document.getElementById("receiverEmail").value,
+    phone: document.getElementById("receiverPhone").value,
+  };
 
-      setTimeout(async () => {
-        try {
-          const res = await fetch(`${API_URL}/api/receiver/submit/${id}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ receiver })
-          });
+  loader.style.display = "block";
+  document.querySelector("button[type='submit']").disabled = true;
 
-          loader.style.display = "none";
-          document.querySelector("button[type='submit']").disabled = false;
+  setTimeout(async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/receiver/submit/${id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ receiver }),
+      });
 
-          if (res.ok) {
-            document.getElementById("receiverForm").reset();
-            optionDialog.showModal(); // ✅ Show option dialog
-            setupOptionButtons(id, receiver); // ✅ Pass data
-          } else {
-            const data = await res.json();
-            alert("❌ Error: " + (data.error || "Submission failed"));
-          }
-        } catch (err) {
-          loader.style.display = "none";
-          alert("Network error. Please try again.");
-        }
-      }, 2000);
+      loader.style.display = "none";
+      document.querySelector("button[type='submit']").disabled = false;
+
+      if (res.ok) {
+        document.getElementById("receiverForm").reset();
+        currentId = id;               // store globally
+        currentReceiver = receiver;   // store globally
+        optionDialog.showModal();     // show options
+      } else {
+        const data = await res.json();
+        alert("❌ Error: " + (data.error || "Submission failed"));
+      }
+    } catch (err) {
+      loader.style.display = "none";
+      alert("Network error. Please try again.");
     }
+  }, 2000);
+}
 
-    // ✅ Add handlers for telegram or Email
-    function setupOptionButtons(id, receiver) {
-      const telegramUsername = "Rapidroutesltd"; // <-- Replace with your Telegram @username or group username
-      const message = `Hello Rapid Route Support, I just submitted my receiver details. My Temp ID is ${id}. Please confirm.`;
-      const encodedMessage = encodeURIComponent(message);
+// === Option Buttons ===
+document.getElementById("telegramBtn").onclick = () => {
+  if (!currentId) return alert("Missing ID. Please submit form again.");
+  const telegramLink = `https://t.me/Rapidroutes_bot?start=${currentId}`;
+  window.open(telegramLink, "_blank");
+  optionDialog.close();
+};
 
-      // For personal or public group chats: https://t.me/username
-      // For direct message (via web): https://t.me/username?text=...
-      const telegramURL = `https://t.me/${telegramUsername}?text=${encodedMessage}`;
+document.getElementById("emailBtn").onclick = async () => {
+  if (!currentReceiver || !currentId) return alert("Missing data. Please submit again.");
+  try {
+    const res = await fetch(`${API_URL}/api/notify/email`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: currentReceiver.email,
+        tempId: currentId,
+        name: currentReceiver.name,
+      }),
+    });
 
-      document.getElementById("telegramBtn").onclick = () => {
-        window.open(telegramURL, "_blank");
-        optionDialog.close();
-      };
-
-      document.getElementById("emailBtn").onclick = async () => {
-        try {
-          const res = await fetch(`${API_URL}/api/notify/email`, { // <-- backend route
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              email: receiver.email,
-              tempId: id,
-              name: receiver.name
-            })
-          });
-
-          if (res.ok) {
-            alert("✅ Email sent successfully!");
-            optionDialog.close();
-          } else {
-            alert("❌ Failed to send email.");
-          }
-        } catch (err) {
-          alert("Network error sending email.");
-        }
-      };
+    if (res.ok) {
+      alert("✅ Email sent successfully!");
+      optionDialog.close();
+    } else {
+      alert("❌ Failed to send email.");
     }
-  </script>
+  } catch (err) {
+    alert("Network error sending email.");
+  }
+};
+</script>
+
 </body>
 </html>

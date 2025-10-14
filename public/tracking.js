@@ -320,7 +320,7 @@ companyInfo.forEach(line => {
 
   const tableData = latestTrackingData.items.map(item => [
   item.quantity || 1,
-  "Documents",
+  "Parcel ",
   item.name || "-",
   item.description || "-",
   "$" + ((item.cost || 0) * (item.quantity || 1))
