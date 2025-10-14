@@ -10,18 +10,14 @@ const nodemailer = require("nodemailer");
 const notifyRoutes = require("./routes/notifyRoutes"); // ✅
 const telegramNotify = require('./routes/telegramNotify');
 
-const bodyParser = require("body-parser");
-const { setupWebhook } = require("./telegramBot");
+
 
 const Tracking = require("./models/Tracking.js");
 const Admin = require("./models/Admin.js");
 
 const app = express();
 app.use(express.json());
-app.use('/api/notify', telegramNotify);
-app.use(bodyParser.json());
-
-setupWebhook(app);
+app.use('/api/notify/telegram', telegramNotify);
 
 const BASE_URL = process.env.BASE_URL || "http://localhost:5000";
 
@@ -48,6 +44,13 @@ app.use(cors({
 
 
 app.use("/api/notify", notifyRoutes);
+
+const { bot } = require('./telegramBot');
+app.post(`/bot${process.env.TELEGRAM_BOT_TOKEN}`, (req, res) => {
+  bot.processUpdate(req.body);
+  res.sendStatus(200);
+});
+
 
 // MongoDB connection
 const MONGO_URI = process.env.MONGO_URI;

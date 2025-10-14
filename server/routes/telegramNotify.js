@@ -10,17 +10,15 @@ router.post('/telegram', async (req, res) => {
   try {
     const { tempId, name, email, phone, address } = req.body;
 
-    const msgToAdmin = `
-    📦 *New Receiver Submission*
-    ━━━━━━━━━━━━━━━
-    👤 *Name:* ${name}
-    📧 *Email:* ${email}
-    📞 *Phone:* ${phone}
-    🏠 *Address:* ${address}
-    🆔 *Temp ID:* ${tempId}
-    `;
-    await bot.sendMessage(adminId, msgToAdmin, { parse_mode: "Markdown" });
+    const msgToAdmin = `📦 New Receiver Submission
+━━━━━━━━━━━━━━━
+👤 Name: ${name}
+📧 Email: ${email}
+📞 Phone: ${phone}
+🏠 Address: ${address}
+🆔 Temp ID: ${tempId}`;
 
+    await bot.sendMessage(adminId, msgToAdmin);
 
     // Optional: send message to user if already linked
     try {
