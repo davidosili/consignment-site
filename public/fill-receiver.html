@@ -160,7 +160,7 @@ dialog::backdrop {
 </head>
 <body>
   <nav class="navbar">
-    <a href="landing.html"><img class="logo" src="./img/logistics2-copy.png" alt="Logo"></a>
+    <img class="logo" src="./img/logistics2-copy.png" alt="Logo">
   </nav>
 
   <main>
@@ -330,14 +330,6 @@ document.getElementById("emailBtn").onclick = async () => {
     alert("Network error sending email.");
   }
 };
-
-    async function loadComponent(id, file) {
-      const res = await fetch(file);
-      const html = await res.text();
-      document.getElementById(id).innerHTML = html;
-    }
-
-    loadComponent('footer', 'footer.html');
 </script>
 
 </body>
