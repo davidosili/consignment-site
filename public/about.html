@@ -418,25 +418,6 @@
  
     loadComponent('footer', 'footer.html');
 
-    // Mobile navbar toggle
-    setTimeout(() => {
-      const menuToggle = document.getElementById("menuToggle");
-      const navMenu = document.getElementById("navMenu");
-      if (menuToggle && navMenu) {
-        menuToggle.addEventListener("click", (e) => {
-          e.stopPropagation();
-          navMenu.classList.toggle("active");
-          menuToggle.classList.toggle("open");
-        });
-
-        document.addEventListener("click", (e) => {
-          if (!navMenu.contains(e.target) && !menuToggle.contains(e.target)) {
-            navMenu.classList.remove("active");
-            menuToggle.classList.remove("open");
-          }
-        });
-      }
-    }, 400);
 
      // Reveal on scroll
         function reveal() {
