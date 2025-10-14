@@ -1,5 +1,6 @@
 require("dotenv").config();
 const express = require("express");
+const axios = require("axios");
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
@@ -443,8 +444,10 @@ app.get("/", (req, res) => {
 app.use(express.static(path.join(__dirname, "../public")));
 
 
+app.get("/ping", (req, res) => res.send("pong"));
+
 // Use your Render URL here
-const SELF_URL = "https://rapidroutesltd.onrender.com/";
+const SELF_URL = "https://rapidroutesltd.onrender.com/ping";
 
 setInterval(() => {
   axios.get(SELF_URL)
