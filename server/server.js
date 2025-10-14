@@ -439,6 +439,15 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "../public/landing.html"));
 });
 
+// Use your Render URL here
+const SELF_URL = "https://rapidroutesltd.onrender.com/";
+
+setInterval(() => {
+  axios.get(SELF_URL)
+    .then(() => console.log("🔁 Pinged self to stay awake"))
+    .catch((err) => console.error("⚠️ Self ping failed:", err.message));
+}, 13 * 60 * 1000); // every 13 minutes
+
 // ---------------- SERVER ----------------
 const PORT = process.env.PORT || 5000;
 

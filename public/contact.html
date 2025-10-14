@@ -232,7 +232,19 @@
 </head>
 
 <body>
-  <div id="navbar"></div>
+    <header class="navbar">
+    <a href="landing.html">
+      <img src="./img/logistics2-copy.png" alt="logo" class="logo">
+    </a>
+    <nav class="nav-links" id="navMenu">
+      <a href="index.html" class="btn-primary" style="text-align: center;">Track shipments</a>
+      <a href="landing.html">Home</a>
+      <a href="about.html">About</a>
+      <a href="services.html">Services</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+    <div class="menu-toggle" id="menuToggle" style="color: #d84659" >☰</div>
+  </header>
 
   <!-- HERO -->
   <section class="hero">
@@ -334,24 +346,26 @@
     }
   }
 
-        setTimeout(() => {
-      const menuToggle = document.getElementById("menuToggle");
-      const navMenu = document.getElementById("navMenu");
-      if (menuToggle && navMenu) {
-        menuToggle.addEventListener("click", (e) => {
-          e.stopPropagation();
-          navMenu.classList.toggle("active");
-          menuToggle.classList.toggle("open");
-        });
+const menuToggle = document.getElementById("menuToggle");
+const navMenu = document.getElementById("navMenu");
 
-        document.addEventListener("click", (e) => {
-          if (!navMenu.contains(e.target) && !menuToggle.contains(e.target)) {
-            navMenu.classList.remove("active");
-            menuToggle.classList.remove("open");
-          }
-        });
-      }
-    }, 400);
+// Toggle open/close when clicking the menu button
+menuToggle.addEventListener("click", (e) => {
+  e.stopPropagation(); // prevent this click from closing it immediately
+  navMenu.classList.toggle("active");
+  menuToggle.classList.toggle("open");
+});
+
+// Close the menu when clicking anywhere outside of it
+document.addEventListener("click", (e) => {
+  const isClickInsideMenu = navMenu.contains(e.target);
+  const isClickOnToggle = menuToggle.contains(e.target);
+
+  if (!isClickInsideMenu && !isClickOnToggle) {
+    navMenu.classList.remove("active");
+    menuToggle.classList.remove("open");
+  }
+});
   </script>
 </body>
 </html>
