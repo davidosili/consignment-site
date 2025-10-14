@@ -411,7 +411,7 @@ async function createShipmentLink(event) {
     const data = await res.json();
     if (!res.ok) return alert(data.error || "Error creating link");
 
-    const link = `${API_URL}/fill-receiver.html?id=${data.tempId}`;
+    const link = `${window.location.origin}/fill-receiver.html?id=${data.tempId}`;
     document.getElementById("generatedLinkBox").classList.remove("hidden");
     document.getElementById("generatedLink").value = link;
 
