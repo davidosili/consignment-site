@@ -10,6 +10,9 @@ const nodemailer = require("nodemailer");
 const notifyRoutes = require("./routes/notifyRoutes"); // ✅
 const telegramNotify = require('./routes/telegramNotify');
 
+const express = require("express");
+const bodyParser = require("body-parser");
+const { setupWebhook } = require("./telegramBot");
 
 const Tracking = require("./models/Tracking.js");
 const Admin = require("./models/Admin.js");
@@ -17,6 +20,9 @@ const Admin = require("./models/Admin.js");
 const app = express();
 app.use(express.json());
 app.use('/api/notify', telegramNotify);
+app.use(bodyParser.json());
+
+setupWebhook(app);
 
 const BASE_URL = process.env.BASE_URL || "http://localhost:5000";
 
