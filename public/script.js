@@ -1,7 +1,9 @@
 const BASE_URL =
   window.location.hostname === "localhost"
     ? "http://localhost:5000"
-    : "https://rapidroutesltd.com";
+    : window.location.hostname === "rapidroutesltd.com"
+    ? "https://rapidroutesltd.com"
+    : "https://rapidroutesltd.onrender.com";
 
 // Override the default alert() to log instead of showing popup
 window.alert = function (message) {
