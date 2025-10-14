@@ -1,7 +1,9 @@
 const API_URL =
   window.location.hostname === "localhost"
     ? "http://localhost:5000"
-    : "https://rapidroutesltd.com" || "https://rapidroutesltd.onrender.com";
+    : window.location.hostname === "rapidroutesltd.com"
+    ? "https://rapidroutesltd.com"
+    : "https://rapidroutesltd.onrender.com";
 
 // ------------------ LOGIN ------------------
 async function loginAdmin() {
