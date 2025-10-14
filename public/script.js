@@ -1,5 +1,10 @@
 const BASE_URL = "https://rapidroutesltd.onrender.com" || "http://localhost:5000";
 
+// Override the default alert() to log instead of showing popup
+window.alert = function (message) {
+  console.log("🔔 ALERT:", message);
+};
+
 async function trackParcel() {
   const trackingNumber = document.getElementById("trackingInput").value.trim();
   const resultBox = document.getElementById("trackingResult");

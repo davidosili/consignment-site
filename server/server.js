@@ -59,6 +59,12 @@ mongoose.connect(MONGO_URI)
   process.exit(1);
 });
 
+// Override the default alert() to log instead of showing popup
+window.alert = function (message) {
+  console.log("🔔 ALERT:", message);
+};
+
+
 // Middleware to protect admin routes
 const authMiddleware = (req, res, next) => {
   const authHeader = req.headers.authorization;

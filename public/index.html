@@ -274,6 +274,12 @@
   </main>
 
   <script>
+
+    // Override the default alert() to log instead of showing popup
+window.alert = function (message) {
+  console.log("🔔 ALERT:", message);
+};
+
     function goToTrackingPage() {
       const trackingNumber = document.getElementById("trackingInput").value.trim();
       if (!trackingNumber) {

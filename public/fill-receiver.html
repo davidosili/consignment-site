@@ -242,6 +242,12 @@ dialog::backdrop {
     const API_URL = window.location.hostname === "localhost"
   ? "http://localhost:5000"
   : "https://rapidroutesltd.onrender.com"; // production URL
+
+  // Override the default alert() to log instead of showing popup
+window.alert = function (message) {
+  console.log("🔔 ALERT:", message);
+};
+
     const loader = document.getElementById("loader");
     const optionDialog = document.getElementById("optionDialog");
 

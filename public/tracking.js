@@ -2,6 +2,12 @@ const BASE_URL = window.location.hostname === "localhost"
   ? "http://localhost:5000"
   : "https://rapidroutesltd.onrender.com";
 
+
+// Override the default alert() to log instead of showing popup
+window.alert = function (message) {
+  console.log("🔔 ALERT:", message);
+};
+
 let latestTrackingData = null; // store the last fetched tracking data
 
 async function loadTrackingInfo() {
