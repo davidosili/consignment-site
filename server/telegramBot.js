@@ -44,7 +44,7 @@ bot.on("message", async (msg) => {
 
       await bot.sendMessage(chatId,
         `💙 Hello ${username || "there"}!  
-You are now connected to our customer support for your parcel (Temp ID: ${tempId}).  
+You'd be connected to our customer support soon in other to complete payment for your parcel (Temp ID: ${tempId}).  
 Feel free to type your message here.`
       );
 
