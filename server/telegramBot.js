@@ -1,75 +1,93 @@
-require('dotenv').config();
-const TelegramBot = require('node-telegram-bot-api');
+// telegramBot.js
+const TelegramBot = require("node-telegram-bot-api");
 
-const token = process.env.TELEGRAM_BOT_TOKEN;
-const adminId = parseInt(process.env.TELEGRAM_ADMIN_ID, 10);
-const bot = new TelegramBot(token, { polling: true });
+// Replace this with your bot token
+const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const ADMIN_CHAT_ID = process.env.ADMIN_CHAT_ID; // your Telegram user ID
 
-// tempId -> chatId mapping
+const bot = new TelegramBot(BOT_TOKEN, { polling: true });
+
+// Temporary mapping of tempId <-> Telegram chat ID
 const userMap = new Map();
 
-// Handle errors
-bot.on("polling_error", (err) => console.error("Telegram polling error:", err));
-
-// 🔹 When a user starts the bot
-bot.on("message", async (msg) => {
+// Handle user start command like /start TMP-12345
+bot.onText(/\/start (.+)/, (msg, match) => {
   const chatId = msg.chat.id;
-  const text = msg.text?.trim();
-  const username = msg.from.username ? `@${msg.from.username}` : msg.from.first_name;
+  const tempId = match[1].trim();
 
-  if (!text) return;
+  userMap.set(tempId, chatId);
 
-  // ✅ /start TMP-XXXX links user
-  if (text.startsWith("/start")) {
-    const parts = text.split(" ");
-    const tempId = parts[1];
+  bot.sendMessage(
+    chatId,
+    `✅ Thank you for your submission!\nOur customer care team will contact you shortly.\n\nTemp ID: ${tempId}`
+  );
 
-    if (tempId) {
-      userMap.set(tempId, chatId);
+  // Notify admin
+  bot.sendMessage(
+    ADMIN_CHAT_ID,
+    `📩 New user connected!\nTemp ID: ${tempId}\nChat ID: ${chatId}`
+  );
+});
 
-      await bot.sendMessage(chatId,
-        `💙 Hello ${username || "there"}!  
-You are now connected to our customer support for your parcel (Temp ID: ${tempId}).  
-Feel free to type your message here.`
-      );
-
-      await bot.sendMessage(adminId,
-        `📩 New Telegram Connection:
-━━━━━━━━━━━━━━━
-🆔 Temp ID: ${tempId}
-👤 Username: ${username}
-💬 Chat ID: ${chatId}`
-      );
-    } else {
-      await bot.sendMessage(chatId,
-        "👋 Welcome to Rapid Route! Please use the link sent to your email or form to start."
-      );
-    }
+// Handle admin /msg command
+bot.onText(/\/msg (TMP-\d+)\s+([\s\S]+)/, (msg, match) => {
+  const senderId = msg.chat.id;
+  if (senderId.toString() !== ADMIN_CHAT_ID.toString()) {
+    bot.sendMessage(senderId, "⛔ You are not authorized to use this command.");
     return;
   }
 
-  // ✅ If admin sends a reply to a forwarded user message
-  if (chatId === adminId && msg.reply_to_message?.forward_from?.id) {
-    const repliedUserId = msg.reply_to_message.forward_from.id;
-    await bot.sendMessage(repliedUserId, msg.text);
+  const tempId = match[1];
+  const text = match[2];
+  const userChatId = userMap.get(tempId);
+
+  if (!userChatId) {
+    bot.sendMessage(senderId, `⚠️ No user found for ${tempId}.`);
     return;
   }
 
-  // ✅ If message comes from a user (not admin)
-  if (chatId !== adminId) {
-    // Forward message to admin
-    await bot.forwardMessage(adminId, chatId, msg.message_id);
-    await bot.sendMessage(adminId, 
-      `💬 Message from ${username || "User"} (Chat ID: ${chatId})\nReply to this message to respond.`
+  bot.sendMessage(userChatId, `📩 Message from Admin:\n${text}`);
+  bot.sendMessage(senderId, `✅ Sent message to ${tempId}.`);
+});
+
+// Relay messages from users to admin
+bot.on("message", (msg) => {
+  const chatId = msg.chat.id;
+
+  // Ignore admin messages handled by /msg
+  if (chatId.toString() === ADMIN_CHAT_ID.toString()) return;
+
+  // Find which tempId belongs to this user
+  const tempId = [...userMap.entries()].find(
+    ([, id]) => id === chatId
+  )?.[0];
+
+  if (tempId) {
+    // Forward to admin
+    bot.sendMessage(
+      ADMIN_CHAT_ID,
+      `💬 Message from ${tempId}:\n${msg.text}`
     );
   }
 });
 
-// Allow backend to send direct messages too
-function sendMessageToUser(tempId, message) {
-  const chatId = userMap.get(tempId);
-  if (!chatId) throw new Error("User not linked to Telegram yet.");
-  return bot.sendMessage(chatId, message);
-}
+// Handle admin reply to forwarded messages
+bot.on("message", (msg) => {
+  const chatId = msg.chat.id;
+  if (chatId.toString() !== ADMIN_CHAT_ID.toString()) return;
 
-module.exports = { bot, userMap, sendMessageToUser };
+  if (msg.reply_to_message && msg.reply_to_message.text) {
+    const match = msg.reply_to_message.text.match(/from (TMP-\d+)/);
+    if (match) {
+      const tempId = match[1];
+      const userChatId = userMap.get(tempId);
+
+      if (userChatId) {
+        bot.sendMessage(userChatId, `📩 Admin Reply:\n${msg.text}`);
+        bot.sendMessage(chatId, `✅ Replied to ${tempId}.`);
+      }
+    }
+  }
+});
+
+console.log("🤖 Telegram bot is running...");
