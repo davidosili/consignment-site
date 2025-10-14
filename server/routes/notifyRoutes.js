@@ -4,10 +4,6 @@ const router = express.Router();
 const axios = require("axios");
 require("dotenv").config();
 
-// Override the default alert() to log instead of showing popup
-window.alert = function (message) {
-  console.log("🔔 ALERT:", message);
-};
 
 // --- Google Cloud Translate Setup ---
 const { Translate } = require("@google-cloud/translate").v2;
