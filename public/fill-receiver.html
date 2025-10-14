@@ -160,7 +160,7 @@ dialog::backdrop {
 </head>
 <body>
   <nav class="navbar">
-    <img class="logo" src="./img/logistics2-copy.png" alt="Logo">
+    <a href="landing.html"><img class="logo" src="./img/logistics2-copy.png" alt="Logo"></a>
   </nav>
 
   <main>
@@ -197,9 +197,8 @@ dialog::backdrop {
     </div>
   </main>
 
-  <footer>
-    <p>© 2021 RapidRoute Logistics. All rights reserved.</p>
-  </footer>
+  <!-- ===== FOOTER ===== -->
+  <footer class="footer reveal" id="footer">
 
 <dialog id="optionDialog">
   <div class="dialog-container">
@@ -330,6 +329,14 @@ document.getElementById("emailBtn").onclick = async () => {
     alert("Network error sending email.");
   }
 };
+
+    async function loadComponent(id, file) {
+      const res = await fetch(file);
+      const html = await res.text();
+      document.getElementById(id).innerHTML = html;
+    }
+
+    loadComponent('footer', 'footer.html');
 </script>
 
 </body>
