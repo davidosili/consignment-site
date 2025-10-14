@@ -17,11 +17,13 @@ app.use(express.json());
 
 const BASE_URL = process.env.BASE_URL || "http://localhost:5000";
 
-// CORS (keep for API testing via Postman, but won't matter if frontend is served from same origin)
+// CORS allowed origins
 const allowedOrigins = [
   "http://localhost:5000",
-  "https://rapidroutesltd.onrender.com"
+  "https://rapidroutesltd.onrender.com", // Render domain (still valid fallback)
+  "https://rapidroutesltd.com",          // ✅ Your custom domain
 ];
+
 
 app.use(cors({
   origin: function(origin, callback) {
