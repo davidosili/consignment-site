@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Parcel Tracking | RapidRoute Logistics</title>
+  <link rel="stylesheet" href="nav.css">
 
   <style>
 /* ✅ GLOBAL RESET */
@@ -57,7 +58,7 @@ header, footer {
 /* MAIN CONTAINER */
 .container {
   max-width: 1000px;
-  margin: 40px auto;
+  margin: 0px auto;
   background: #fff;
   border-radius: 12px;
   padding: 50px 20px;
@@ -280,7 +281,18 @@ h2 {
 </head>
 
 <body>
-  <header id="navbar"></header>
+    <!-- ===== NAVBAR ===== -->
+  <div class="navbar reveal">
+    <a href="landing.html"><img src="./img/logistics2-copy.png" alt="logo" class="logo"></a>
+    <nav class="nav-links" id="navMenu">
+      <a href="index.html" class="btn-primary" style="text-align: center;">Track Shipment</a>
+      <a href="landing.html">Home</a>
+      <a href="about.html">About</a>
+      <a href="services.html">Services</a>
+      <a href="contact.html">Contact</a>
+    </nav>
+    <div class="menu-toggle" id="menuToggle" style="color: #d84659;">☰</div>
+  </div>
 
   <div class="container">
     <h2>Track Your Shipment</h2>
@@ -325,7 +337,6 @@ h2 {
       }
     }
 
-    loadComponent('navbar', 'navbar.html');
     loadComponent('footer', 'footer.html');
 
         // Mobile navbar toggle
@@ -347,6 +358,10 @@ h2 {
         });
       }
     }, 400);
+
+    const menuToggle = document.getElementById("menuToggle");
+const navMenu = document.getElementById("navMenu");
+
 
   </script>
 
