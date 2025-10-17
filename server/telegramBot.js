@@ -30,12 +30,10 @@ bot.on("webhook_error", (err) => console.error("Telegram webhook error:", err));
 bot.on("message", async (msg) => {
   const chatId = msg.chat.id;
   const text = msg.text?.trim();
-  const username = msg.from.username ? `@${msg.from.username}` : msg.from.first_name;
+  const username = msg.from.username ? `@${msg.from.username}` : msg.from.first_name || "User";
 
-  if (!text) return;
-
-  // ✅ /start TMP-XXXX links user
-  if (text.startsWith("/start")) {
+  // ✅ Handle /start TMP-XXXX
+  if (text?.startsWith("/start")) {
     const parts = text.split(" ");
     const tempId = parts[1];
 
@@ -43,9 +41,8 @@ bot.on("message", async (msg) => {
       userMap.set(tempId, chatId);
 
       await bot.sendMessage(chatId,
-        `💙 Hello ${username || "there"}!  
-You'd be connected to our customer support soon in other to complete payment for your parcel (Temp ID: ${tempId}).  
-Feel free to type your message here.`
+        `💙 Hello ${username}!  
+You are now connected to our support. Please wait while we verify your parcel (Temp ID: ${tempId}).`
       );
 
       await bot.sendMessage(adminId,
@@ -56,26 +53,51 @@ Feel free to type your message here.`
 💬 Chat ID: ${chatId}`
       );
     } else {
-      await bot.sendMessage(chatId,
-        "👋 Welcome to Rapid Route! Please use the link sent to your email or form to start."
-      );
+      await bot.sendMessage(chatId, "👋 Please use the correct link with your Temp ID.");
     }
     return;
   }
 
-  // ✅ If admin sends a reply to a forwarded user message
+  // ✅ Admin replying to user (text, photo, doc, video)
   if (chatId === adminId && msg.reply_to_message?.forward_from?.id) {
     const repliedUserId = msg.reply_to_message.forward_from.id;
-    await bot.sendMessage(repliedUserId, msg.text);
+
+    try {
+      if (text) await bot.sendMessage(repliedUserId, text);
+
+      if (msg.photo) {
+        const fileId = msg.photo[msg.photo.length - 1].file_id;
+        await bot.sendPhoto(repliedUserId, fileId, { caption: msg.caption || "" });
+      }
+
+      if (msg.document) {
+        const fileId = msg.document.file_id;
+        await bot.sendDocument(repliedUserId, fileId, { caption: msg.caption || "" });
+      }
+
+      if (msg.video) {
+        const fileId = msg.video.file_id;
+        await bot.sendVideo(repliedUserId, fileId, { caption: msg.caption || "" });
+      }
+    } catch (err) {
+      console.error("❌ Failed to send media from admin to user:", err);
+    }
     return;
   }
 
-  // ✅ If message comes from a user (not admin)
+  // ✅ If message comes from a user
   if (chatId !== adminId) {
-    // Forward message to admin
+    // Forward *any type of message* (text, photo, doc, video, etc.)
     await bot.forwardMessage(adminId, chatId, msg.message_id);
-    await bot.sendMessage(adminId, 
-      `💬 Message from ${username || "User"} (Chat ID: ${chatId})\nReply to this message to respond.`
+
+    // If caption exists, include it
+    if (msg.caption) {
+      await bot.sendMessage(adminId, `📝 Caption: ${msg.caption}`);
+    }
+
+    await bot.sendMessage(
+      adminId,
+      `💬 Message from ${username} (Chat ID: ${chatId})\nReply to this message to respond.`
     );
   }
 });
