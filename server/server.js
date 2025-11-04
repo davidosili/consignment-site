@@ -226,6 +226,31 @@ app.put("/api/admin/tracking/number/:trackingNumber", authMiddleware, async (req
   }
 });
 
+// ✅ Update expected delivery date
+app.put("/api/admin/tracking/delivery/:trackingNumber", authMiddleware, async (req, res) => {
+  try {
+    const { expectedDelivery } = req.body;
+
+    if (!expectedDelivery) {
+      return res.status(400).json({ error: "Expected delivery date is required." });
+    }
+
+    const updated = await Tracking.findOneAndUpdate(
+      { trackingNumber: req.params.trackingNumber },
+      { $set: { expectedDelivery: new Date(expectedDelivery) } },
+      { new: true }
+    );
+
+    if (!updated) return res.status(404).json({ error: "Tracking not found" });
+
+    res.json({ message: "Expected delivery date updated successfully", updated });
+  } catch (err) {
+    console.error("Expected delivery update error:", err);
+    res.status(500).json({ error: "Failed to update expected delivery" });
+  }
+});
+
+
 // Get all tracking entries
 app.get("/api/admin/tracking", authMiddleware, async (req, res) => {
   const entries = await Tracking.find().sort({ createdAt: -1 });
@@ -275,7 +300,7 @@ app.post("/api/admin/approve-shipment/:id", authMiddleware, async (req, res) => 
       origin: temp.sender?.address || "Unknown",
       destination: temp.receiver?.address || "Unknown",
       location: temp.sender?.address || "Warehouse",
-      expectedDelivery: new Date(Date.now() + 28 * 24 * 60 * 60 * 1000),
+      expectedDelivery: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
       status: "Pending",
       items: itemsData,
       updates: [

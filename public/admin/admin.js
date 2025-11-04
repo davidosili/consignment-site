@@ -467,3 +467,36 @@ async function rejectShipment(id) {
     console.error("Reject shipment error:", err);
   }
 }
+
+async function promptChangeDate(trackingNumber, currentDate) {
+  const newDate = prompt(`Current: ${new Date(currentDate).toLocaleDateString()}\nEnter new delivery date (YYYY-MM-DD):`);
+  if (!newDate) return;
+
+  const token = localStorage.getItem("adminToken");
+  if (!token) {
+    alert("You must be logged in as admin.");
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_URL}/api/admin/tracking/delivery/${trackingNumber}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({ expectedDelivery: newDate })
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      alert("Expected delivery date updated successfully!");
+      loadTracking();
+    } else {
+      alert(data.error || "Failed to update date");
+    }
+  } catch (err) {
+    console.error("Change date error:", err);
+    alert("Server error updating delivery date");
+  }
+}

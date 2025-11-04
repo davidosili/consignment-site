@@ -189,7 +189,11 @@
             <th>Destination</th>
             <th>Location</th>
             <th>Status</th>
-            <th>Expected Delivery</th>
+            <td>
+              ${new Date(t.expectedDelivery).toLocaleDateString()}<br>
+              <button onclick="promptChangeDate('${t.trackingNumber}', '${t.expectedDelivery}')">Change</button>
+            </td>
+            >
             <th>Created At</th>
             <th>Items</th>
             <th>Actions</th>
