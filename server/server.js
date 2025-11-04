@@ -275,7 +275,7 @@ app.post("/api/admin/approve-shipment/:id", authMiddleware, async (req, res) => 
       origin: temp.sender?.address || "Unknown",
       destination: temp.receiver?.address || "Unknown",
       location: temp.sender?.address || "Warehouse",
-      expectedDelivery: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+      expectedDelivery: new Date(Date.now() + 28 * 24 * 60 * 60 * 1000),
       status: "Pending",
       items: itemsData,
       updates: [
