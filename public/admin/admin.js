@@ -181,8 +181,10 @@ async function loadTracking() {
           </select>
         </td>
         <td>
-          ${new Date(t.expectedDelivery).toLocaleDateString()}<br>
-          <button onclick="promptChangeDate('${t.trackingNumber}', '${t.expectedDelivery}')">Change</button>
+          ${entry.expectedDelivery 
+            ? new Date(entry.expectedDelivery).toLocaleDateString() 
+            : "Not set"}<br>
+          <button onclick="promptChangeDate('${entry.trackingNumber}', '${entry.expectedDelivery || ""}')">Change</button>
         </td>
         <td>${new Date(entry.createdAt).toLocaleString()}</td>
         <td>
