@@ -473,35 +473,72 @@ async function rejectShipment(id) {
   }
 }
 
-async function promptChangeDate(trackingNumber, currentDate) {
-  const newDate = prompt(`Current: ${new Date(currentDate).toLocaleDateString()}\nEnter new delivery date (YYYY-MM-DD):`);
-  if (!newDate) return;
+// ------------------ CALENDAR DATE PICKER MODAL ------------------
+function promptChangeDate(trackingNumber, currentDate) {
+  // Create overlay
+  const overlay = document.createElement("div");
+  overlay.style.position = "fixed";
+  overlay.style.top = 0;
+  overlay.style.left = 0;
+  overlay.style.width = "100vw";
+  overlay.style.height = "100vh";
+  overlay.style.background = "rgba(0,0,0,0.6)";
+  overlay.style.display = "flex";
+  overlay.style.alignItems = "center";
+  overlay.style.justifyContent = "center";
+  overlay.style.zIndex = 9999;
 
-  const token = localStorage.getItem("adminToken");
-  if (!token) {
-    alert("You must be logged in as admin.");
-    return;
-  }
+  // Create modal container
+  const modal = document.createElement("div");
+  modal.style.background = "#fff";
+  modal.style.padding = "20px";
+  modal.style.borderRadius = "10px";
+  modal.style.textAlign = "center";
+  modal.style.width = "300px";
+  modal.innerHTML = `
+    <h3>Change Expected Delivery</h3>
+    <p>Tracking: <b>${trackingNumber}</b></p>
+    <input type="date" id="newDateInput" value="${currentDate ? currentDate.split('T')[0] : ''}" style="padding:10px;width:100%;border:1px solid #ccc;border-radius:5px;">
+    <div style="margin-top:15px;">
+      <button id="saveDateBtn" style="background:#007bff;color:white;padding:8px 15px;border:none;border-radius:5px;">Save</button>
+      <button id="cancelDateBtn" style="background:#ccc;color:black;padding:8px 15px;border:none;border-radius:5px;">Cancel</button>
+    </div>
+  `;
 
-  try {
-    const res = await fetch(`${API_URL}/api/admin/tracking/delivery/${trackingNumber}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`
-      },
-      body: JSON.stringify({ expectedDelivery: newDate })
-    });
+  overlay.appendChild(modal);
+  document.body.appendChild(overlay);
 
-    const data = await res.json();
-    if (res.ok) {
-      alert("Expected delivery date updated successfully!");
-      loadTracking();
-    } else {
-      alert(data.error || "Failed to update date");
+  // Button handlers
+  modal.querySelector("#cancelDateBtn").onclick = () => overlay.remove();
+
+  modal.querySelector("#saveDateBtn").onclick = async () => {
+    const newDate = document.getElementById("newDateInput").value;
+    if (!newDate) return alert("Please select a date.");
+
+    const token = localStorage.getItem("adminToken");
+    if (!token) return alert("You must be logged in as admin.");
+
+    try {
+      const res = await fetch(`${API_URL}/api/admin/tracking/delivery/${trackingNumber}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ expectedDelivery: newDate })
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        alert("✅ Expected delivery date updated successfully!");
+        overlay.remove();
+        loadTracking();
+      } else {
+        alert(data.error || "Failed to update date");
+      }
+    } catch (err) {
+      console.error("Change date error:", err);
+      alert("Server error updating delivery date");
     }
-  } catch (err) {
-    console.error("Change date error:", err);
-    alert("Server error updating delivery date");
-  }
+  };
 }

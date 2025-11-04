@@ -56,6 +56,15 @@
     .hidden {
       display: none;
     }
+    /* Optional: modal animation & overlay */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+div[style*="rgba(0,0,0,0.6)"] {
+  animation: fadeIn 0.2s ease-in;
+}
+
   </style>
 </head>
 <body>
