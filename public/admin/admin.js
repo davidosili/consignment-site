@@ -180,7 +180,10 @@ async function loadTracking() {
             <option value="Delivered" ${entry.status === "Delivered" ? "selected" : ""}>Delivered</option>
           </select>
         </td>
-        <td>${entry.expectedDelivery ? new Date(entry.expectedDelivery).toLocaleDateString() : "Not set"}</td>
+        <td>
+          ${new Date(t.expectedDelivery).toLocaleDateString()}<br>
+          <button onclick="promptChangeDate('${t.trackingNumber}', '${t.expectedDelivery}')">Change</button>
+        </td>
         <td>${new Date(entry.createdAt).toLocaleString()}</td>
         <td>
           ${entry.items && entry.items.length > 0 
