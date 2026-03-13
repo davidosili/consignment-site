@@ -3,7 +3,7 @@ const BASE_URL =
     ? "http://localhost:5000"
     : window.location.hostname === "rapidroutesltd.com"
     ? "https://rapidroutesltd.com"
-    : "https://rapidroutesltd.onrender.com";
+    : "https://consignment-site.vercel.app";
 
 
 
