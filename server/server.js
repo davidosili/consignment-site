@@ -24,7 +24,7 @@ const BASE_URL = process.env.BASE_URL || "http://localhost:5000";
 // CORS allowed origins
 const allowedOrigins = [
   "http://localhost:5000",
-  "https://rapidroutesltd.onrender.com", // Render domain (still valid fallback)
+  "https://consignment-site.vercel.app", // Render domain (still valid fallback)
   "https://rapidroutesltd.com",   
   "https://www.rapidroutesltd.com",// ✅ Your custom domain
 ];
