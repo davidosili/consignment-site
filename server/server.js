@@ -7,28 +7,30 @@ const jwt = require("jsonwebtoken");
 const cors = require("cors");
 const path = require("path");
 const nodemailer = require("nodemailer");
-const notifyRoutes = require("./routes/notifyRoutes"); // ✅
+const crypto = require("crypto");
+
+// Route & Model Imports
+const notifyRoutes = require("./routes/notifyRoutes"); 
 const telegramNotify = require('./routes/telegramNotify');
-
-
-
 const Tracking = require("./models/Tracking.js");
 const Admin = require("./models/Admin.js");
+const TempShipment = require("./models/TempShipment");
+const { bot } = require('./telegramBot');
 
 const app = express();
+
+// ==========================================
+// 1. GLOBAL MIDDLEWARE (MUST BE AT THE TOP)
+// ==========================================
 app.use(express.json());
-app.use('/api/notify/telegram', telegramNotify);
 
-const BASE_URL = process.env.BASE_URL || "http://localhost:5000";
-
-// CORS allowed origins
+// CORS Configuration
 const allowedOrigins = [
   "http://localhost:5000",
-  "https://consignment-site.vercel.app", // Render domain (still valid fallback)
-  "https://rapidroutesltd.com",   
-  "https://www.rapidroutesltd.com",// ✅ Your custom domain
+  "https://consignment-site.vercel.app", // Your Vercel frontend
+  "https://rapidroutesltd.com",          // Custom domain non-www
+  "https://www.rapidroutesltd.com",      // Custom domain www
 ];
-
 
 app.use(cors({
   origin: function(origin, callback) {
@@ -40,39 +42,36 @@ app.use(cors({
     }
     return callback(null, true);
   },
+  credentials: true, // Allows authorization headers to pass
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
-app.use("/api/notify", notifyRoutes);
+// Explicitly handle preflight requests for all routes
+app.options('*', cors());
 
-const { bot } = require('./telegramBot');
-app.post(`/bot${process.env.TELEGRAM_BOT_TOKEN}`, (req, res) => {
-  bot.processUpdate(req.body);
-  res.sendStatus(200);
-});
-
-// MongoDB connection
+// ==========================================
+// 2. DATABASE CONNECTION
+// ==========================================
 const MONGO_URI = process.env.MONGO_URI;
 const SECRET = process.env.SECRET;
+const BASE_URL = process.env.BASE_URL || "http://localhost:5000";
 
-if (!MONGO_URI) {
-  console.error("❌ MONGO_URI is missing in .env");
-  process.exit(1);
-}
-
-if (!SECRET) {
-  console.error("❌ SECRET is missing in .env");
+if (!MONGO_URI || !SECRET) {
+  console.error("❌ MONGO_URI or SECRET is missing in .env");
   process.exit(1);
 }
 
 mongoose.connect(MONGO_URI)
-.then(() => console.log("✅ MongoDB connected"))
-.catch((err) => {
-  console.error("❌ MongoDB connection error:", err);
-  process.exit(1);
-});
+  .then(() => console.log("✅ MongoDB connected"))
+  .catch((err) => {
+    console.error("❌ MongoDB connection error:", err);
+    process.exit(1);
+  });
 
-
-// Middleware to protect admin routes
+// ==========================================
+// 3. AUTH MIDDLEWARE
+// ==========================================
 const authMiddleware = (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader) return res.status(401).json({ error: "No token provided" });
@@ -87,9 +86,21 @@ const authMiddleware = (req, res, next) => {
   }
 };
 
-// ---------------- PUBLIC ROUTES ----------------
+// ==========================================
+// 4. ROUTES
+// ==========================================
 
-// User tracking lookup
+// Telegram Webhook
+app.use('/api/notify/telegram', telegramNotify);
+app.post(`/bot${process.env.TELEGRAM_BOT_TOKEN}`, (req, res) => {
+  bot.processUpdate(req.body);
+  res.sendStatus(200);
+});
+
+// Notifications
+app.use("/api/notify", notifyRoutes);
+
+// --- PUBLIC ROUTES ---
 app.get("/api/tracking/:trackingNumber", async (req, res) => {
   try {
     const trackingNumber = req.params.trackingNumber;
@@ -99,7 +110,6 @@ app.get("/api/tracking/:trackingNumber", async (req, res) => {
       return res.status(404).json({ message: "Sorry, parcel not yet collected." });
     }
 
-    // Respond with correct structure
     res.json({
       trackingNumber: record.trackingNumber,
       sender: record.sender,
@@ -111,24 +121,19 @@ app.get("/api/tracking/:trackingNumber", async (req, res) => {
       expectedDelivery: record.expectedDelivery,
       createdAt: record.createdAt,
       updates: record.updates || [],
-      items: record.items || [] // ✅ include items
+      items: record.items || [] 
     });
-
   } catch (err) {
     console.error("Lookup error:", err);
     res.status(500).json({ message: "Server error" });
   }
 });
-// ---------------- ADMIN AUTH ----------------
 
-// Signup 
+// --- ADMIN AUTH ---
 app.post("/api/admin/signup", async (req, res) => {
   const { username, password } = req.body;
-
   const existing = await Admin.findOne({ username });
-  if (existing) {
-    return res.status(400).json({ error: "Username already exists" });
-  }
+  if (existing) return res.status(400).json({ error: "Username already exists" });
 
   const hashedPassword = await bcrypt.hash(password, 10);
   const newAdmin = new Admin({ username, password: hashedPassword });
@@ -137,10 +142,8 @@ app.post("/api/admin/signup", async (req, res) => {
   res.json({ message: "Admin account created successfully" });
 });
 
-// Login
 app.post("/api/admin/login", async (req, res) => {
   const { username, password } = req.body;
-
   const admin = await Admin.findOne({ username });
   if (!admin) return res.status(401).json({ error: "Invalid credentials" });
 
@@ -148,137 +151,84 @@ app.post("/api/admin/login", async (req, res) => {
   if (!isMatch) return res.status(401).json({ error: "Invalid credentials" });
 
   const token = jwt.sign({ id: admin._id }, SECRET, { expiresIn: "1h" });
-
   res.json({ message: "Login successful", token });
 });
 
-// ---------------- ADMIN-ONLY ROUTES ----------------
+// --- ADMIN-ONLY ROUTES ---
 app.post("/api/admin/tracking", authMiddleware, async (req, res) => {
   try {
-    const {
-      sender,
-      receiver,
-      origin,
-      destination,
-      location,
-      expectedDelivery,
-      status,
-      items 
-    } = req.body;
-
+    const { sender, receiver, origin, destination, location, expectedDelivery, status, items } = req.body;
     const newTracking = new Tracking({
-      sender,
-      receiver,
-      origin,
-      destination,
-      location,
-      expectedDelivery,
+      sender, receiver, origin, destination, location, expectedDelivery,
       status: status || "Collected",
-      items: items || [], // <-- saves items
-      updates: [
-        {
-          location: location || "Warehouse",
-          status: status || "Collected",
-          timestamp: new Date()
-        }
-      ]
+      items: items || [],
+      updates: [{ location: location || "Warehouse", status: status || "Collected", timestamp: new Date() }]
     });
 
     await newTracking.save();
     res.status(201).json(newTracking);
   } catch (err) {
-    if (err.code === 11000) {
-      return res.status(400).json({ error: "Tracking number already exists. Please retry." });
-    }
-    console.error("Create error:", err);
+    if (err.code === 11000) return res.status(400).json({ error: "Tracking number already exists." });
     res.status(400).json({ error: err.message });
   }
 });
 
-// ✅ Update tracking status
 app.put("/api/admin/tracking/number/:trackingNumber", authMiddleware, async (req, res) => {
   try {
     const { status, location } = req.body;
-
     const updated = await Tracking.findOneAndUpdate(
       { trackingNumber: req.params.trackingNumber },
       {
-        $set: {
-          status,
-          location
-        },
-        $push: {
-          updates: {
-            location: location || "Unknown",
-            status: status || "Updated",
-            timestamp: new Date()
-          }
-        }
+        $set: { status, location },
+        $push: { updates: { location: location || "Unknown", status: status || "Updated", timestamp: new Date() } }
       },
       { new: true }
     );
-
     if (!updated) return res.status(404).json({ error: "Tracking not found" });
     res.json(updated);
   } catch (err) {
-    console.error("Update error:", err);
     res.status(500).json({ error: "Failed to update status" });
   }
 });
 
-// ✅ Update expected delivery date
 app.put("/api/admin/tracking/delivery/:trackingNumber", authMiddleware, async (req, res) => {
   try {
     const { expectedDelivery } = req.body;
-
-    if (!expectedDelivery) {
-      return res.status(400).json({ error: "Expected delivery date is required." });
-    }
+    if (!expectedDelivery) return res.status(400).json({ error: "Expected delivery date is required." });
 
     const updated = await Tracking.findOneAndUpdate(
       { trackingNumber: req.params.trackingNumber },
       { $set: { expectedDelivery: new Date(expectedDelivery) } },
       { new: true }
     );
-
     if (!updated) return res.status(404).json({ error: "Tracking not found" });
-
     res.json({ message: "Expected delivery date updated successfully", updated });
   } catch (err) {
-    console.error("Expected delivery update error:", err);
     res.status(500).json({ error: "Failed to update expected delivery" });
   }
 });
 
-
-// Get all tracking entries
 app.get("/api/admin/tracking", authMiddleware, async (req, res) => {
   const entries = await Tracking.find().sort({ createdAt: -1 });
   res.json(entries);
 });
 
-// Delete a tracking entry
 app.delete("/api/admin/tracking/:id", authMiddleware, async (req, res) => {
   await Tracking.findByIdAndDelete(req.params.id);
   res.json({ message: "Deleted successfully" });
 });
 
-const crypto = require("crypto");
-const TempShipment = require("./models/TempShipment");
-
-// Fetch pending shipments
+// --- SHIPMENT ROUTES ---
 app.get("/api/admin/pending-shipments", authMiddleware, async (req, res) => {
   const shipments = await TempShipment.find().sort({ createdAt: -1 });
   res.json(shipments);
 });
 
-// Reject shipment
 app.delete("/api/admin/reject-shipment/:id", authMiddleware, async (req, res) => {
   await TempShipment.findByIdAndDelete(req.params.id);
   res.json({ message: "Rejected successfully" });
 });
 
-// Approve shipment → convert TempShipment → Tracking
 app.post("/api/admin/approve-shipment/:id", authMiddleware, async (req, res) => {
   try {
     const temp = await TempShipment.findById(req.params.id);
@@ -293,7 +243,6 @@ app.post("/api/admin/approve-shipment/:id", authMiddleware, async (req, res) => 
       quantity: it.quantity || 1,
     }));
 
-    // ✅ Create new tracking record
     const newTracking = await Tracking.create({
       sender: temp.sender,
       receiver: temp.receiver,
@@ -303,23 +252,13 @@ app.post("/api/admin/approve-shipment/:id", authMiddleware, async (req, res) => 
       expectedDelivery: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
       status: "Pending",
       items: itemsData,
-      updates: [
-        {
-          status: "Created",
-          timestamp: new Date(),
-          location: temp.sender?.address || "Warehouse",
-        },
-      ],
+      updates: [{ status: "Created", timestamp: new Date(), location: temp.sender?.address || "Warehouse" }],
     });
 
-    // ✅ Send tracking email to receiver
     if (temp.receiver?.email) {
       const transporter = nodemailer.createTransport({
         service: "gmail",
-        auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS,
-        },
+        auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
       });
 
       const mailOptions = {
@@ -333,32 +272,21 @@ app.post("/api/admin/approve-shipment/:id", authMiddleware, async (req, res) => 
           <p><b>Origin:</b> ${newTracking.origin}</p>
           <p><b>Destination:</b> ${newTracking.destination}</p>
           <p>You can track your shipment anytime at:</p>
-          <a href="${BASE_URL}/tracking.html?num=${newTracking.trackingNumber}">
-            Track Package
-          </a>
+          <a href="${BASE_URL}/tracking.html?num=${newTracking.trackingNumber}">Track Package</a>
           <br><br>
           <p>Thank you for choosing <b>Rapid Route Courier</b>!</p>
         `,
       };
-
       await transporter.sendMail(mailOptions);
-      console.log(`📧 Email sent to ${temp.receiver.email}`);
     }
 
-    // Delete temp shipment
     await TempShipment.findByIdAndDelete(temp._id);
-
-    res.json({
-      message: "Shipment approved and email sent",
-      trackingNumber: newTracking.trackingNumber,
-    });
+    res.json({ message: "Shipment approved and email sent", trackingNumber: newTracking.trackingNumber });
   } catch (err) {
-    console.error("Approve shipment error:", err);
     res.status(500).json({ error: "Failed to approve shipment" });
   }
 });
 
-// POST /api/receiver/submit/:id
 app.post("/api/receiver/submit/:id", async (req, res) => {
   try {
     const temp = await TempShipment.findOne({ tempId: req.params.id });
@@ -367,25 +295,17 @@ app.post("/api/receiver/submit/:id", async (req, res) => {
     temp.receiver = req.body.receiver;
     temp.status = "Awaiting Admin Approval";
     await temp.save();
-
     res.json({ success: true });
   } catch (err) {
-    console.error("Receiver submit error:", err);
     res.status(500).json({ error: "Server error" });
   }
 });
 
-// ------------------ CREATE TEMP SHIPMENT LINK (MULTI-ITEM SUPPORT) ------------------
 app.post("/api/admin/shipment-link", authMiddleware, async (req, res) => {
   try {
     const { sender, items } = req.body;
+    if (!sender?.name) return res.status(400).json({ error: "Sender name is required." });
 
-    // Validate sender
-    if (!sender?.name) {
-      return res.status(400).json({ error: "Sender name is required." });
-    }
-
-    // Validate and normalize items
     let itemArray = [];
     if (Array.isArray(items)) {
       itemArray = items.map((it, idx) => ({
@@ -395,100 +315,63 @@ app.post("/api/admin/shipment-link", authMiddleware, async (req, res) => {
         quantity: it.quantity || 1,
       }));
     } else if (req.body.item) {
-      // fallback for single item (old requests)
-      itemArray = [
-        {
-          description: req.body.item.description || "",
-          weight: req.body.item.weight || "",
-          cost: req.body.item.cost || "0",
-          quantity: req.body.item.quantity || 1,
-        },
-      ];
+      itemArray = [{ description: req.body.item.description || "", weight: req.body.item.weight || "", cost: req.body.item.cost || "0", quantity: req.body.item.quantity || 1 }];
     } else {
       return res.status(400).json({ error: "At least one item is required." });
     }
 
-    // Generate unique temp ID
     const tempId = "TMP-" + Math.random().toString(36).substring(2, 10).toUpperCase();
-
-    // Save temporary shipment
-    const newTemp = new TempShipment({
-      tempId,
-      sender,
-      items: itemArray,
-      status: "Pending Receiver Info",
-    });
-
+    const newTemp = new TempShipment({ tempId, sender, items: itemArray, status: "Pending Receiver Info" });
     await newTemp.save();
-
     res.json({ tempId });
   } catch (err) {
-    console.error("Error creating shipment link:", err);
     res.status(500).json({ error: "Server error creating shipment link" });
   }
 });
 
-// ------------------ CONTACT FORM ROUTE ------------------
+// --- CONTACT FORM ---
 app.post("/api/contact", async (req, res) => {
   const { name, email, subject, message } = req.body;
-
-  if (!name || !email || !subject || !message) {
-    return res.status(400).json({ error: "All fields are required" });
-  }
+  if (!name || !email || !subject || !message) return res.status(400).json({ error: "All fields are required" });
 
   try {
     const transporter = nodemailer.createTransport({
       host: "smtp-relay.brevo.com",
       port: 587,
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
+      auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
     });
 
     const mailOptions = {
       from: `"Rapid Route Courier" <${process.env.EMAIL_USER}>`,
       to: process.env.EMAIL_RECEIVER,
       subject: `📬 Contact Form: ${subject}`,
-      text: `
-Name: ${name}
-Email: ${email}
-Message:
-${message}
-      `,
+      text: `Name: ${name}\nEmail: ${email}\nMessage:\n${message}`,
     };
 
     await transporter.sendMail(mailOptions);
     res.json({ success: true, message: "Message sent successfully!" });
   } catch (error) {
-    console.error("Email error:", error);
     res.status(500).json({ error: "Failed to send message" });
   }
 });
 
-// ---------------- SERVE FRONTEND ----------------
-
-// Serve landing.html as the default page
-app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, "../public/landing.html"));
-});
-
-// Then serve everything inside /public folder (for JS, CSS, images, etc.)
+// ==========================================
+// 5. STATIC FILES & SERVER PING
+// ==========================================
+app.get("/", (req, res) => res.sendFile(path.join(__dirname, "../public/landing.html")));
 app.use(express.static(path.join(__dirname, "../public")));
-
 
 app.get("/ping", (req, res) => res.send("pong"));
 
-// Use your Render URL here
 const SELF_URL = "https://rapidroutesltd.onrender.com/ping";
-
 setInterval(() => {
   axios.get(SELF_URL)
     .then(() => console.log("🔁 Pinged self to stay awake"))
     .catch((err) => console.error("⚠️ Self ping failed:", err.message));
-}, 13 * 60 * 1000); // every 13 minutes
+}, 13 * 60 * 1000);
 
-// ---------------- SERVER ----------------
+// ==========================================
+// 6. START SERVER
+// ==========================================
 const PORT = process.env.PORT || 5000;
-
-app.listen(PORT, () => console.log(`🚀 Server + Frontend running at http://localhost:${PORT}`));
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
