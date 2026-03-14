@@ -1,18 +1,19 @@
-{
+{{
   "version": 2,
   "builds": [
     {
       "src": "server/server.js",
-      "use": "@vercel/node",
-      "config": {
-        "includeFiles": ["public/**"]
-      }
+      "use": "@vercel/node"
     }
   ],
   "rewrites": [
     {
-      "source": "/(.*)",
+      "source": "/api/(.*)",
       "destination": "/server/server.js"
+    },
+    {
+      "source": "/",
+      "destination": "/landing.html"
     }
   ]
 }
