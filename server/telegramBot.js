@@ -6,7 +6,7 @@ const adminId = parseInt(process.env.TELEGRAM_ADMIN_ID, 10);
 
 // Detect environment
 const isProduction = process.env.NODE_ENV === 'production';
-const BASE_URL = process.env.BASE_URL || "https://rapidroutesltd.onrender.com";
+const BASE_URL = process.env.BASE_URL || "https://consignment-site.vercel.app";
 
 // ✅ Use polling locally, webhook on Render
 let bot;
