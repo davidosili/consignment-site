@@ -11,9 +11,9 @@ const crypto = require("crypto");
 // Route & Model Imports
 const notifyRoutes = require("./routes/notifyRoutes"); 
 const telegramNotify = require('./routes/telegramNotify');
-const Tracking = require("../models/Tracking.js"); // Ensure this path is correct relative to server.js
-const Admin = require("../models/Admin.js");       // Ensure this path is correct relative to server.js
-const TempShipment = require("../models/TempShipment"); // Ensure this path is correct relative to server.js
+const Tracking = require("./models/Tracking.js"); // Ensure this path is correct relative to server.js
+const Admin = require("./models/Admin.js");       // Ensure this path is correct relative to server.js
+const TempShipment = require("./models/TempShipment"); // Ensure this path is correct relative to server.js
 const { bot } = require('./telegramBot');
 
 const app = express();
