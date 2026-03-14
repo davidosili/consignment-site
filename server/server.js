@@ -48,23 +48,23 @@ app.use(cors({
 app.options('*', cors());
 
 // ==========================================
-// 2. DATABASE CONNECTION
+// 2. DATABASE CONNECTION (UPDATED FOR VERCEL)
 // ==========================================
 const MONGO_URI = process.env.MONGO_URI;
 const SECRET = process.env.SECRET;
 const BASE_URL = process.env.BASE_URL || "https://www.rapidroutesltd.com";
 
 if (!MONGO_URI || !SECRET) {
-  console.error("❌ MONGO_URI or SECRET is missing in .env");
-  process.exit(1);
+  // Log the error, but DO NOT crash the serverless function
+  console.error("❌ CRITICAL: MONGO_URI or SECRET is missing in Vercel Environment Variables!");
+} else {
+  mongoose.connect(MONGO_URI)
+    .then(() => console.log("✅ MongoDB connected"))
+    .catch((err) => {
+      // Log the error, but DO NOT crash the serverless function
+      console.error("❌ MongoDB connection error. Did you whitelist IP 0.0.0.0/0 in Atlas?:", err.message);
+    });
 }
-
-mongoose.connect(MONGO_URI)
-  .then(() => console.log("✅ MongoDB connected"))
-  .catch((err) => {
-    console.error("❌ MongoDB connection error:", err);
-    process.exit(1);
-  });
 
 // ==========================================
 // 3. AUTH MIDDLEWARE
