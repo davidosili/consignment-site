@@ -11,19 +11,19 @@ const crypto = require("crypto");
 // Route & Model Imports
 const notifyRoutes = require("./routes/notifyRoutes"); 
 const telegramNotify = require('./routes/telegramNotify');
-const Tracking = require("./models/Tracking"); // Ensure this path is correct relative to server.js
-const Admin = require("./models/Admin");       // Ensure this path is correct relative to server.js
-const TempShipment = require("./models/TempShipment"); // Ensure this path is correct relative to server.js
+const Tracking = require("./models/Tracking"); 
+const Admin = require("./models/Admin");       
+const TempShipment = require("./models/TempShipment"); 
 const { bot } = require('./telegramBot');
 
 const app = express();
 
 // ==========================================
-// 1. GLOBAL MIDDLEWARE (MUST BE AT THE TOP)
+// 1. GLOBAL MIDDLEWARE
 // ==========================================
 app.use(express.json());
 
-// CORS Configuration
+// CORS Configuration - Handled via middleware to avoid Path-to-Regexp crashes
 const allowedOrigins = [
   "http://localhost:5000",
   "https://consignment-site.vercel.app", 
@@ -42,27 +42,25 @@ app.use(cors({
   },
   credentials: true, 
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"]
+  allowedHeaders: ["Content-Type", "Authorization"],
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 }));
 
-app.options('(.*)', cors());
-
 // ==========================================
-// 2. DATABASE CONNECTION (UPDATED FOR VERCEL)
+// 2. DATABASE CONNECTION
 // ==========================================
 const MONGO_URI = process.env.MONGO_URI;
 const SECRET = process.env.SECRET;
 const BASE_URL = process.env.BASE_URL || "https://www.rapidroutesltd.com";
 
 if (!MONGO_URI || !SECRET) {
-  // Log the error, but DO NOT crash the serverless function
-  console.error("❌ CRITICAL: MONGO_URI or SECRET is missing in Vercel Environment Variables!");
+  console.error("❌ CRITICAL: MONGO_URI or SECRET is missing!");
 } else {
   mongoose.connect(MONGO_URI)
     .then(() => console.log("✅ MongoDB connected"))
     .catch((err) => {
-      // Log the error, but DO NOT crash the serverless function
-      console.error("❌ MongoDB connection error. Did you whitelist IP 0.0.0.0/0 in Atlas?:", err.message);
+      console.error("❌ MongoDB connection error:", err.message);
     });
 }
 
@@ -128,27 +126,35 @@ app.get("/api/tracking/:trackingNumber", async (req, res) => {
 
 // --- ADMIN AUTH ---
 app.post("/api/admin/signup", async (req, res) => {
-  const { username, password } = req.body;
-  const existing = await Admin.findOne({ username });
-  if (existing) return res.status(400).json({ error: "Username already exists" });
+  try {
+    const { username, password } = req.body;
+    const existing = await Admin.findOne({ username });
+    if (existing) return res.status(400).json({ error: "Username already exists" });
 
-  const hashedPassword = await bcrypt.hash(password, 10);
-  const newAdmin = new Admin({ username, password: hashedPassword });
-  await newAdmin.save();
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newAdmin = new Admin({ username, password: hashedPassword });
+    await newAdmin.save();
 
-  res.json({ message: "Admin account created successfully" });
+    res.json({ message: "Admin account created successfully" });
+  } catch (err) {
+    res.status(500).json({ error: "Signup failed" });
+  }
 });
 
 app.post("/api/admin/login", async (req, res) => {
-  const { username, password } = req.body;
-  const admin = await Admin.findOne({ username });
-  if (!admin) return res.status(401).json({ error: "Invalid credentials" });
+  try {
+    const { username, password } = req.body;
+    const admin = await Admin.findOne({ username });
+    if (!admin) return res.status(401).json({ error: "Invalid credentials" });
 
-  const isMatch = await bcrypt.compare(password, admin.password);
-  if (!isMatch) return res.status(401).json({ error: "Invalid credentials" });
+    const isMatch = await bcrypt.compare(password, admin.password);
+    if (!isMatch) return res.status(401).json({ error: "Invalid credentials" });
 
-  const token = jwt.sign({ id: admin._id }, SECRET, { expiresIn: "1h" });
-  res.json({ message: "Login successful", token });
+    const token = jwt.sign({ id: admin._id }, SECRET, { expiresIn: "1h" });
+    res.json({ message: "Login successful", token });
+  } catch (err) {
+    res.status(500).json({ error: "Login failed" });
+  }
 });
 
 // --- ADMIN-ONLY ROUTES ---
@@ -365,7 +371,8 @@ app.get("/ping", (req, res) => res.send("pong"));
 // ==========================================
 const PORT = process.env.PORT || 5000;
 
-if (process.env.NODE_ENV !== "production") {
+// Only listen if not running as a Vercel serverless function
+if (process.env.NODE_ENV !== "production" && !process.env.VERCEL) {
   app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
 }
 
