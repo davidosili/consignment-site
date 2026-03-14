@@ -1,6 +1,5 @@
 require("dotenv").config();
 const express = require("express");
-const axios = require("axios");
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
@@ -12,9 +11,9 @@ const crypto = require("crypto");
 // Route & Model Imports
 const notifyRoutes = require("./routes/notifyRoutes"); 
 const telegramNotify = require('./routes/telegramNotify');
-const Tracking = require("./models/Tracking.js");
-const Admin = require("./models/Admin.js");
-const TempShipment = require("./models/TempShipment");
+const Tracking = require("../models/Tracking.js"); // Ensure this path is correct relative to server.js
+const Admin = require("../models/Admin.js");       // Ensure this path is correct relative to server.js
+const TempShipment = require("../models/TempShipment"); // Ensure this path is correct relative to server.js
 const { bot } = require('./telegramBot');
 
 const app = express();
@@ -27,14 +26,13 @@ app.use(express.json());
 // CORS Configuration
 const allowedOrigins = [
   "http://localhost:5000",
-  "https://consignment-site.vercel.app", // Your Vercel frontend
-  "https://rapidroutesltd.com",          // Custom domain non-www
-  "https://www.rapidroutesltd.com",      // Custom domain www
+  "https://consignment-site.vercel.app", 
+  "https://rapidroutesltd.com",          
+  "https://www.rapidroutesltd.com",      
 ];
 
 app.use(cors({
   origin: function(origin, callback) {
-    // allow requests with no origin like mobile apps or Postman
     if (!origin) return callback(null, true);
     if (allowedOrigins.indexOf(origin) === -1) {
       const msg = `CORS policy: This origin is not allowed: ${origin}`;
@@ -42,12 +40,11 @@ app.use(cors({
     }
     return callback(null, true);
   },
-  credentials: true, // Allows authorization headers to pass
+  credentials: true, 
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
-// Explicitly handle preflight requests for all routes
 app.options('*', cors());
 
 // ==========================================
@@ -55,7 +52,7 @@ app.options('*', cors());
 // ==========================================
 const MONGO_URI = process.env.MONGO_URI;
 const SECRET = process.env.SECRET;
-const BASE_URL = process.env.BASE_URL || "http://localhost:5000";
+const BASE_URL = process.env.BASE_URL || "https://www.rapidroutesltd.com";
 
 if (!MONGO_URI || !SECRET) {
   console.error("❌ MONGO_URI or SECRET is missing in .env");
@@ -76,7 +73,7 @@ const authMiddleware = (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader) return res.status(401).json({ error: "No token provided" });
 
-  const token = authHeader.split(" ")[1]; // Bearer <token>
+  const token = authHeader.split(" ")[1]; 
   try {
     const decoded = jwt.verify(token, SECRET);
     req.adminId = decoded.id;
@@ -90,14 +87,14 @@ const authMiddleware = (req, res, next) => {
 // 4. ROUTES
 // ==========================================
 
-// Telegram Webhook
 app.use('/api/notify/telegram', telegramNotify);
-app.post(`/bot${process.env.TELEGRAM_BOT_TOKEN}`, (req, res) => {
-  bot.processUpdate(req.body);
-  res.sendStatus(200);
-});
+if(process.env.TELEGRAM_BOT_TOKEN) {
+    app.post(`/bot${process.env.TELEGRAM_BOT_TOKEN}`, (req, res) => {
+      bot.processUpdate(req.body);
+      res.sendStatus(200);
+    });
+}
 
-// Notifications
 app.use("/api/notify", notifyRoutes);
 
 // --- PUBLIC ROUTES ---
@@ -356,22 +353,21 @@ app.post("/api/contact", async (req, res) => {
 });
 
 // ==========================================
-// 5. STATIC FILES & SERVER PING
+// 5. STATIC FILES
 // ==========================================
 app.get("/", (req, res) => res.sendFile(path.join(__dirname, "../public/landing.html")));
 app.use(express.static(path.join(__dirname, "../public")));
 
 app.get("/ping", (req, res) => res.send("pong"));
 
-const SELF_URL = "https://rapidroutesltd.onrender.com/ping";
-setInterval(() => {
-  axios.get(SELF_URL)
-    .then(() => console.log("🔁 Pinged self to stay awake"))
-    .catch((err) => console.error("⚠️ Self ping failed:", err.message));
-}, 13 * 60 * 1000);
-
 // ==========================================
-// 6. START SERVER
+// 6. START SERVER (UPDATED FOR VERCEL)
 // ==========================================
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+
+if (process.env.NODE_ENV !== "production") {
+  app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+}
+
+// THIS IS REQUIRED FOR VERCEL
+module.exports = app;
