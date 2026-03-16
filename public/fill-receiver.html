@@ -247,9 +247,11 @@
     loadComponent('navbar', 'navbar.html');
     loadComponent('footer', 'footer.html');
    
+    // FIXED: Properly formatted the ternary operator
     const API_URL =
       window.location.hostname === "localhost"
         ? "http://localhost:5000"
+        : window.location.hostname.includes("rapidroutesltd.com")
         ? "https://rapidroutesltd.com"
         : "https://consignment-site.vercel.app";
 
