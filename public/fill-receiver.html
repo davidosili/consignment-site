@@ -1,339 +1,347 @@
+okay help me with the fully updated version 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Receiver Sign-Up | Rapid Route</title>
-  <link rel="stylesheet" href="fill-receiver.css" />
-  <style>
-    /* ===== Loader ===== */
-    dialog {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      border: none;
-      padding: 0;
-      border-radius: 16px;
-      max-width: 420px;
-      width: 90%;
-      background: #fff;
-      animation: popIn 0.4s ease;
-      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
-      z-index: 1000;
-    }
-    dialog::backdrop {
-      background: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(6px);
-    }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Receiver Sign-Up | Rapid Route</title>
+  <link rel="stylesheet" href="fill-receiver.css" />
+  <style>
+    /* ===== Loader ===== */
 
-    /* Container layout */
-    .dialog-container {
-      padding: 30px 25px;
-      text-align: center;
-      font-family: "Inter", sans-serif;
-    }
+dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: none;
+  padding: 0;
+  border-radius: 16px;
+  max-width: 420px;
+  width: 90%;
+  background: #fff;
+  animation: popIn 0.4s ease;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
+  z-index: 1000; /* ensures it appears above everything else */
+}
+dialog::backdrop {
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(6px);
+}
 
-    /* Animated SVG */
-    .dialog-icon {
-      width: 90px;
-      height: 90px;
-      margin: 0 auto 15px;
-    }
-    .circle-bg {
-      fill: none;
-      stroke: #e9ecef;
-      stroke-width: 8;
-    }
-    .circle-progress {
-      fill: none;
-      stroke: #007bff;
-      stroke-width: 8;
-      stroke-linecap: round;
-      stroke-dasharray: 339.29;
-      stroke-dashoffset: 339.29;
-      animation: drawCircle 1s ease-out forwards;
-    }
-    .checkmark {
-      fill: none;
-      stroke: #007bff;
-      stroke-width: 8;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-      stroke-dasharray: 60;
-      stroke-dashoffset: 60;
-      animation: drawCheck 0.5s ease-out 1s forwards;
-    }
+/* Container layout */
+.dialog-container {
+  padding: 30px 25px;
+  text-align: center;
+  font-family: "Inter", sans-serif;
+}
 
-    /* Title and text */
-    .dialog-title {
-      color: #007bff;
-      font-size: 1.4rem;
-      margin-top: 5px;
-      margin-bottom: 10px;
-    }
-    .dialog-text {
-      color: #444;
-      font-size: 0.95rem;
-      margin-bottom: 25px;
-      line-height: 1.4;
-    }
+/* Animated SVG */
+.dialog-icon {
+  width: 90px;
+  height: 90px;
+  margin: 0 auto 15px;
+}
+.circle-bg {
+  fill: none;
+  stroke: #e9ecef;
+  stroke-width: 8;
+}
+.circle-progress {
+  fill: none;
+  stroke: #007bff;
+  stroke-width: 8;
+  stroke-linecap: round;
+  stroke-dasharray: 339.29;
+  stroke-dashoffset: 339.29;
+  animation: drawCircle 1s ease-out forwards;
+}
+.checkmark {
+  fill: none;
+  stroke: #007bff;
+  stroke-width: 8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 60;
+  stroke-dashoffset: 60;
+  animation: drawCheck 0.5s ease-out 1s forwards;
+}
 
-    /* Buttons */
-    .dialog-buttons {
-      display: flex;
-      justify-content: center;
-      gap: 12px;
-    }
-    .dialog-buttons button {
-      background: #007bff;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      padding: 10px 18px;
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 0.9rem;
-      transition: 0.3s ease;
-    }
-    .dialog-buttons button:hover {
-      background: #0056b3;
-      transform: scale(1.05);
-    }
+/* Title and text */
+.dialog-title {
+  color: #007bff;
+  font-size: 1.4rem;
+  margin-top: 5px;
+  margin-bottom: 10px;
+}
+.dialog-text {
+  color: #444;
+  font-size: 0.95rem;
+  margin-bottom: 25px;
+  line-height: 1.4;
+}
 
-    .icon-btn {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      justify-content: center;
-    }
+/* Buttons */
+.dialog-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+.dialog-buttons button {
+  background: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 18px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: 0.3s ease;
+}
+.dialog-buttons button:hover {
+  background: #0056b3;
+  transform: scale(1.05);
+}
 
-    .icon-btn svg {
-      width: 18px;
-      height: 18px;
-      flex-shrink: 0;
-    }
+.icon-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+}
 
-    /* Telegram button style */
-    .icon-btn.telegram {
-      background: #0088cc;
-    }
-    .icon-btn.telegram:hover {
-      background: #006ea8;
-    }
+.icon-btn svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
 
-    /* Email button style */
-    .icon-btn.email {
-      background: #007bff;
-    }
-    .icon-btn.email:hover {
-      background: #0056b3;
-    }
+/* Telegram button style */
+.icon-btn.telegram {
+  background: #0088cc;
+}
+.icon-btn.telegram:hover {
+  background: #006ea8;
+}
 
-    /* Animations */
-    @keyframes popIn {
-      from { transform: scale(0.8); opacity: 0; }
-      to { transform: scale(1); opacity: 1; }
-    }
-    @keyframes drawCircle {
-      to { stroke-dashoffset: 0; }
-    }
-    @keyframes drawCheck {
-      to { stroke-dashoffset: 0; }
-    }
+/* Email button style */
+.icon-btn.email {
+  background: #007bff;
+}
+.icon-btn.email:hover {
+  background: #0056b3;
+}
 
-    .loader {
-      display: none;
-      border: 4px solid #f3f3f3;
-      border-top: 4px solid #007bff;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      animation: spin 1s linear infinite;
-      margin: 20px auto;
-    }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-  </style>
+/* Animations */
+@keyframes popIn {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+@keyframes drawCircle {
+  to { stroke-dashoffset: 0; }
+}
+@keyframes drawCheck {
+  to { stroke-dashoffset: 0; }
+}
+
+    .loader {
+      display: none;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #007bff;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+    }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+  </style>
 </head>
 <body>
-  <nav class="navbar" id="navbar">
-    <img class="logo" src="./img/logistics2-copy.png" alt="Logo">
-  </nav>
+  <nav class="navbar">
+    <img class="logo" src="./img/logistics2-copy.png" alt="Logo">
+  </nav>
 
-  <main>
-    <div class="form-card">
-      <h2>Receiver Registration</h2>
-      <p class="subtitle">Please fill in the receiver’s details below</p>
+  <main>
+    <div class="form-card">
+      <h2>Receiver Registration</h2>
+      <p class="subtitle">Please fill in the receiver’s details below</p>
 
-      <form id="receiverForm" onsubmit="submitReceiver(event)">
-        <div class="form-grid">
-          <div class="form-group">
-            <label for="receiverName">Full Name</label>
-            <input type="text" id="receiverName" placeholder="John Doe" required />
-          </div>
+      <form id="receiverForm" onsubmit="submitReceiver(event)">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="receiverName">Full Name</label>
+            <input type="text" id="receiverName" placeholder="John Doe" required />
+          </div>
 
-          <div class="form-group">
-            <label for="receiverAddress">Address</label>
-            <input type="text" id="receiverAddress" placeholder="123 Example Street" required />
-          </div>
+          <div class="form-group">
+            <label for="receiverAddress">Address</label>
+            <input type="text" id="receiverAddress" placeholder="123 Example Street" required />
+          </div>
 
-          <div class="form-group">
-            <label for="receiverEmail">Email</label>
-            <input type="email" id="receiverEmail" placeholder="example@mail.com" required />
-          </div>
+          <div class="form-group">
+            <label for="receiverEmail">Email</label>
+            <input type="email" id="receiverEmail" placeholder="example@mail.com" required />
+          </div>
 
-          <div class="form-group">
-            <label for="receiverPhone">Phone Number</label>
-            <input type="tel" id="receiverPhone" placeholder="+234 801 234 5678" required />
-          </div>
-        </div>
+          <div class="form-group">
+            <label for="receiverPhone">Phone Number</label>
+            <input type="tel" id="receiverPhone" placeholder="+234 801 234 5678" required />
+          </div>
+        </div>
 
-        <button type="submit">Submit Details</button>
-        <div class="loader" id="loader"></div>
-      </form>
-    </div>
-  </main>
+        <button type="submit">Submit Details</button>
+        <div class="loader" id="loader"></div>
+      </form>
+    </div>
+  </main>
 
-  <footer class="footer reveal" id="footer">
-  </footer>
+  <!-- ===== FOOTER ===== -->
+  <footer class="footer reveal" id="footer">
+  </footer>
 
 <dialog id="optionDialog">
-  <div class="dialog-container">
-    <div class="dialog-icon">
-      <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
-        <circle class="circle-bg" cx="60" cy="60" r="54" />
-        <circle class="circle-progress" cx="60" cy="60" r="54" />
-        <polyline class="checkmark" points="40,65 55,80 85,45" />
-      </svg>
-    </div>
-    <h2 class="dialog-title">Details Submitted Successfully!</h2>
-    <p class="dialog-text">Confirm your submission, and complete payment for parcel to be processed and scheduled for dispatch:</p>
-    <div class="dialog-buttons">
-    
-    <button id="telegramBtn" class="icon-btn telegram">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-        <path fill="white" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.99 7.37-1.71 8.07c-.13.58-.47.72-.94.45l-2.6-1.92-1.25 1.2c-.14.14-.26.26-.53.26l.19-2.69 4.9-4.42c.21-.19-.05-.3-.33-.11l-6.06 3.82-2.62-.82c-.57-.18-.58-.57.12-.84l10.25-3.95c.47-.17.88.11.73.83z"/>
-      </svg>
-      Confirm via Telegram
-    </button>
+  <div class="dialog-container">
+    <div class="dialog-icon">
+      <!-- Animated SVG success check -->
+      <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+        <circle class="circle-bg" cx="60" cy="60" r="54" />
+        <circle class="circle-progress" cx="60" cy="60" r="54" />
+        <polyline class="checkmark" points="40,65 55,80 85,45" />
+      </svg>
+    </div>
+    <h2 class="dialog-title">Details Submitted Successfully!</h2>
+    <p class="dialog-text">iConfirm your submission, and complete payment for parcel to be processed and Scheduled for dispatch:</p>
+    <div class="dialog-buttons">
+    <!-- Telegram Button -->
+    <button id="telegramBtn" class="icon-btn telegram">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path fill="white" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 
+        10 10-4.48 10-10S17.52 2 12 2zm4.99 7.37-1.71 
+        8.07c-.13.58-.47.72-.94.45l-2.6-1.92-1.25 
+        1.2c-.14.14-.26.26-.53.26l.19-2.69 
+        4.9-4.42c.21-.19-.05-.3-.33-.11l-6.06 
+        3.82-2.62-.82c-.57-.18-.58-.57.12-.84l10.25-3.95c.47-.17.88.11.73.83z"/>
+      </svg>
+      Confirm via Telegram
+    </button>
 
-      <button id="emailBtn" class="icon-btn email">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-          <path fill="white" d="M20 4H4c-1.11 0-2 .9-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6c0-1.1-.89-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/>
-        </svg>
-        Confirm via Email
-      </button>
-    </div>
-  </div>
+
+      <!-- Email Button -->
+      <button id="emailBtn" class="icon-btn email">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+          <path fill="white" d="M20 4H4c-1.11 0-2 .9-2 2v12a2 
+          2 0 0 0 2 2h16a2 2 0 0 0 2-2V6c0-1.1-.89-2-2-2zm0 
+          4-8 5-8-5V6l8 5 8-5v2z"/>
+        </svg>
+        Confirm via Email
+      </button>
+    </div>
+  </div>
 </dialog>
 
-  <script>
-    async function loadComponent(id, file) {
-      try {
-        const res = await fetch(file);
-        const html = await res.text();
-        const element = document.getElementById(id);
-        if (element) {
-          element.innerHTML = html;
-        } else {
-          console.error(`Element with id '${id}' not found.`);
-        }
-      } catch (err) {
-        console.error(`Failed to load ${file}:`, err);
-      }
-    }
+  <script>
 
-    loadComponent('navbar', 'navbar.html');
-    loadComponent('footer', 'footer.html');
-   
-    const API_URL =
-      window.location.hostname === "localhost"
-        ? "http://localhost:5000"
-        ? "https://rapidroutesltd.com"
-        : "https://consignment-site.vercel.app";
+        async function loadComponent(id, file) {
+      const res = await fetch(file);
+      const html = await res.text();
+      document.getElementById(id).innerHTML = html;
+    }
 
-    const loader = document.getElementById("loader");
-    const optionDialog = document.getElementById("optionDialog");
+    loadComponent('navbar', 'navbar.html');
+    loadComponent('footer', 'footer.html');
+   
+const API_URL =
+  window.location.hostname === "localhost"
+    ? "http://localhost:5000"
+    : window.location.hostname === "rapidroutesltd.com"
+    ? "https://rapidroutesltd.com"
+    : "https://consignment-site.vercel.app";
 
-    // Global vars to hold current submission data
-    let currentId = null;
-    let currentReceiver = null;
+const loader = document.getElementById("loader");
+const optionDialog = document.getElementById("optionDialog");
 
-    async function submitReceiver(event) {
-      event.preventDefault();
-      const urlParams = new URLSearchParams(window.location.search);
-      const id = urlParams.get("id");
-      if (!id) return alert("Invalid link.");
+// Global vars to hold current submission data
+let currentId = null;
+let currentReceiver = null;
 
-      const receiver = {
-        name: document.getElementById("receiverName").value,
-        address: document.getElementById("receiverAddress").value,
-        email: document.getElementById("receiverEmail").value,
-        phone: document.getElementById("receiverPhone").value,
-      };
+async function submitReceiver(event) {
+  event.preventDefault();
+  const urlParams = new URLSearchParams(window.location.search);
+  const id = urlParams.get("id");
+  if (!id) return alert("Invalid link.");
 
-      loader.style.display = "block";
-      document.querySelector("button[type='submit']").disabled = true;
+  const receiver = {
+    name: document.getElementById("receiverName").value,
+    address: document.getElementById("receiverAddress").value,
+    email: document.getElementById("receiverEmail").value,
+    phone: document.getElementById("receiverPhone").value,
+  };
 
-      setTimeout(async () => {
-        try {
-          const res = await fetch(`${API_URL}/api/receiver/submit/${id}`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ receiver }),
-          });
+  loader.style.display = "block";
+  document.querySelector("button[type='submit']").disabled = true;
 
-          loader.style.display = "none";
-          document.querySelector("button[type='submit']").disabled = false;
+  setTimeout(async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/receiver/submit/${id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ receiver }),
+      });
 
-          if (res.ok) {
-            document.getElementById("receiverForm").reset();
-            currentId = id;               // store globally
-            currentReceiver = receiver;   // store globally
-            optionDialog.showModal();     // show options
-          } else {
-            const data = await res.json();
-            alert("❌ Error: " + (data.error || "Submission failed"));
-          }
-        } catch (err) {
-          loader.style.display = "none";
-          alert("Network error. Please try again.");
-        }
-      }, 2000);
-    }
+      loader.style.display = "none";
+      document.querySelector("button[type='submit']").disabled = false;
 
-    // === Option Buttons ===
-    document.getElementById("telegramBtn").onclick = () => {
-      if (!currentId) return alert("Missing ID. Please submit form again.");
-      const telegramLink = `https://t.me/Rapidroutes_bot?start=${currentId}`;
-      window.open(telegramLink, "_blank");
-      optionDialog.close();
-    };
+      if (res.ok) {
+        document.getElementById("receiverForm").reset();
+        currentId = id;               // store globally
+        currentReceiver = receiver;   // store globally
+        optionDialog.showModal();     // show options
+      } else {
+        const data = await res.json();
+        alert("❌ Error: " + (data.error || "Submission failed"));
+      }
+    } catch (err) {
+      loader.style.display = "none";
+      alert("Network error. Please try again.");
+    }
+  }, 2000);
+}
 
-    document.getElementById("emailBtn").onclick = async () => {
-      if (!currentReceiver || !currentId) return alert("Missing data. Please submit again.");
-      try {
-        const res = await fetch(`${API_URL}/api/notify/email`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email: currentReceiver.email,
-            tempId: currentId,
-            name: currentReceiver.name,
-          }),
-        });
+// === Option Buttons ===
+document.getElementById("telegramBtn").onclick = () => {
+  if (!currentId) return alert("Missing ID. Please submit form again.");
+  const telegramLink = `https://t.me/Rapidroutes_bot?start=${currentId}`;
+  window.open(telegramLink, "_blank");
+  optionDialog.close();
+};
 
-        if (res.ok) {
-          alert("✅ Email sent successfully!");
-          optionDialog.close();
-        } else {
-          alert("❌ Failed to send email.");
-        }
-      } catch (err) {
-        alert("Network error sending email.");
-      }
-    };
-  </script>
+document.getElementById("emailBtn").onclick = async () => {
+  if (!currentReceiver || !currentId) return alert("Missing data. Please submit again.");
+  try {
+    const res = await fetch(`${API_URL}/api/notify/email`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: currentReceiver.email,
+        tempId: currentId,
+        name: currentReceiver.name,
+      }),
+    });
+
+    if (res.ok) {
+      alert("✅ Email sent successfully!");
+      optionDialog.close();
+    } else {
+      alert("❌ Failed to send email.");
+    }
+  } catch (err) {
+    alert("Network error sending email.");
+  }
+};
+</script>
+
 </body>
 </html>
