@@ -4,31 +4,31 @@ const TelegramUser = require('./models/TelegramUser');
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
 const adminId = parseInt(process.env.TELEGRAM_ADMIN_ID, 10);
-const BASE_URL = process.env.BASE_URL || "http://localhost:3000";
-const isProduction = process.env.NODE_ENV === 'production';
+const BASE_URL = process.env.BASE_URL || "https://www.rapidroutesltd.com";
 
-let bot;
+let bot = new TelegramBot(token);
+console.log("🌐 Telegram bot initialized for webhook mode");
 
 // =====================
-// Initialize Telegram Bot
+// Webhook Handler for Vercel
 // =====================
-if (isProduction) {
-  bot = new TelegramBot(token);
-  bot.setWebHook(`${BASE_URL}/bot${token}`);
-  console.log("🌐 Telegram bot running via webhook");
-} else {
-  bot = new TelegramBot(token, { polling: true });
-  console.log("💻 Telegram bot running in polling mode");
+// This function will be called by Vercel as a serverless API endpoint
+async function webhookHandler(req, res) {
+  try {
+    // Telegram requires POST
+    if (req.method !== 'POST') return res.status(405).send('Method Not Allowed');
+
+    // Process the incoming update
+    await bot.processUpdate(req.body);
+    return res.status(200).send('OK');
+  } catch (err) {
+    console.error('❌ Webhook error:', err);
+    return res.status(500).send('Error');
+  }
 }
 
 // =====================
-// Error Handling
-// =====================
-bot.on("polling_error", err => console.error("❌ Telegram polling error:", err));
-bot.on("webhook_error", err => console.error("❌ Telegram webhook error:", err));
-
-// =====================
-// ✅ START COMMAND (FIXED)
+// /start Command
 // =====================
 bot.onText(/^\/start(?:\s+(.+))?/, async (msg, match) => {
   try {
@@ -38,7 +38,7 @@ bot.onText(/^\/start(?:\s+(.+))?/, async (msg, match) => {
       ? `@${msg.from.username}`
       : msg.from.first_name || "User";
 
-    console.log("🚀 Start triggered:", { chatId, tempId });
+    console.log("🚀 /start triggered:", { chatId, tempId });
 
     if (!tempId) {
       return bot.sendMessage(chatId,
@@ -46,33 +46,22 @@ bot.onText(/^\/start(?:\s+(.+))?/, async (msg, match) => {
       );
     }
 
-    // 🔗 Save or update user
+    // Save or update user
     let user = await TelegramUser.findOne({ chatId });
-
     if (!user) {
-      user = new TelegramUser({
-        chatId,
-        username,
-        tempIds: [tempId],
-      });
-    } else {
-      if (!user.tempIds.includes(tempId)) {
-        user.tempIds.push(tempId);
-      }
+      user = new TelegramUser({ chatId, username, tempIds: [tempId] });
+    } else if (!user.tempIds.includes(tempId)) {
+      user.tempIds.push(tempId);
     }
-
     await user.save();
-    console.log("✅ User linked:", user);
 
-    // ✅ Send automatic message
+    // Send auto message with receiver link
     await bot.sendMessage(chatId,
-      `💙 Hello ${username}!\n\n` +
-      `Tracking ID: ${tempId}\n\n` +
-      `Complete your details below:\n` +
-      `${BASE_URL}/receiver.html?id=${tempId}`
+      `💙 Hello ${username}!\nTracking ID: ${tempId}\n` +
+      `Complete your details here:\n${BASE_URL}/receiver.html?id=${tempId}`
     );
 
-    // ✅ Notify admin
+    // Notify admin
     await bot.sendMessage(adminId,
       `📩 New Telegram Connection
 ━━━━━━━━━━━━━━━
@@ -81,15 +70,17 @@ bot.onText(/^\/start(?:\s+(.+))?/, async (msg, match) => {
 💬 Chat ID: ${chatId}`
     );
 
+    console.log("✅ User linked and admin notified");
+
   } catch (err) {
-    console.error("❌ Start error:", err.response?.body || err);
+    console.error("❌ /start error:", err);
   }
 });
 
 // =====================
-// Incoming Messages
+// Forwarding & Admin Replies
 // =====================
-bot.on("message", async (msg) => {
+bot.on('message', async (msg) => {
   try {
     const chatId = msg.chat.id;
     const text = msg.text?.trim();
@@ -97,63 +88,34 @@ bot.on("message", async (msg) => {
       ? `@${msg.from.username}`
       : msg.from.first_name || "User";
 
-    console.log("📩 Incoming message:", { chatId, text });
+    if (text?.startsWith("/start")) return; // handled separately
 
-    // 🚫 Ignore /start here (handled above)
-    if (text?.startsWith("/start")) return;
-
-    // -----------------
-    // Admin replies to user
-    // -----------------
+    // Admin replying to user
     if (chatId === adminId && msg.reply_to_message) {
       const repliedUserId =
         msg.reply_to_message.forward_from?.id ||
         msg.reply_to_message?.chat?.id;
 
       if (repliedUserId) {
-        try {
-          if (text) await bot.sendMessage(repliedUserId, text);
-
-          if (msg.photo) {
-            const fileId = msg.photo[msg.photo.length - 1].file_id;
-            await bot.sendPhoto(repliedUserId, fileId, { caption: msg.caption || "" });
-          }
-
-          if (msg.document) {
-            await bot.sendDocument(repliedUserId, msg.document.file_id, { caption: msg.caption || "" });
-          }
-
-          if (msg.video) {
-            await bot.sendVideo(repliedUserId, msg.video.file_id, { caption: msg.caption || "" });
-          }
-
-          console.log("✅ Admin reply sent");
-        } catch (err) {
-          console.error("❌ Admin reply failed:", err.response?.body || err);
-        }
+        if (text) await bot.sendMessage(repliedUserId, text);
+        if (msg.photo) await bot.sendPhoto(repliedUserId, msg.photo[msg.photo.length-1].file_id, { caption: msg.caption || "" });
+        if (msg.document) await bot.sendDocument(repliedUserId, msg.document.file_id, { caption: msg.caption || "" });
+        if (msg.video) await bot.sendVideo(repliedUserId, msg.video.file_id, { caption: msg.caption || "" });
+        console.log("✅ Admin reply sent");
       }
       return;
     }
 
-    // -----------------
     // Forward user messages to admin
-    // -----------------
     if (chatId !== adminId) {
-      console.log(`🔹 Forwarding message from ${chatId} to admin`);
-
       await bot.forwardMessage(adminId, chatId, msg.message_id);
-
-      if (msg.caption) {
-        await bot.sendMessage(adminId, `📝 Caption: ${msg.caption}`);
-      }
-
-      await bot.sendMessage(adminId,
-        `💬 Message from ${username} (Chat ID: ${chatId})\nReply to respond.`
-      );
+      if (msg.caption) await bot.sendMessage(adminId, `📝 Caption: ${msg.caption}`);
+      await bot.sendMessage(adminId, `💬 Message from ${username} (Chat ID: ${chatId})\nReply to respond.`);
+      console.log(`🔹 Forwarded message from ${chatId} to admin`);
     }
 
   } catch (err) {
-    console.error("❌ Message processing error:", err.response?.body || err);
+    console.error("❌ Message error:", err);
   }
 });
 
@@ -161,54 +123,24 @@ bot.on("message", async (msg) => {
 // Admin command: /msg TMP-XXXX <text>
 // =====================
 bot.onText(/^\/msg\s+(\S+)\s+(.+)/, async (msg, match) => {
-  try {
-    if (!match) return;
-    if (msg.chat.id !== adminId) return;
+  if (!match || msg.chat.id !== adminId) return;
+  const tempId = match[1];
+  const messageText = match[2];
 
-    const tempId = match[1];
-    const messageText = match[2];
+  const user = await TelegramUser.findOne({ tempIds: tempId });
+  if (!user) return bot.sendMessage(adminId, `❌ No user linked for ${tempId}`);
 
-    console.log(`🔹 Admin sending to ${tempId}: ${messageText}`);
-
-    const user = await TelegramUser.findOne({
-      tempIds: tempId
-    });
-
-    if (!user) {
-      return bot.sendMessage(adminId, `❌ No user linked for ${tempId}`);
-    }
-
-    await bot.sendMessage(user.chatId, `📬 Admin: ${messageText}`);
-    await bot.sendMessage(adminId, `✅ Sent to ${tempId}`);
-
-  } catch (err) {
-    console.error("❌ /msg error:", err.response?.body || err);
-  }
+  await bot.sendMessage(user.chatId, `📬 Admin: ${messageText}`);
+  await bot.sendMessage(adminId, `✅ Sent to ${tempId}`);
 });
 
 // =====================
-// Backend → User message
+// Backend → User Messaging
 // =====================
 async function sendMessageToUser(tempId, message) {
-  try {
-    console.log(`🔹 Sending to tempId=${tempId}`);
-
-    const user = await TelegramUser.findOne({
-      tempIds: tempId
-    });
-
-    if (!user) {
-      throw new Error("User not linked to Telegram");
-    }
-
-    const result = await bot.sendMessage(user.chatId, message);
-    console.log("✅ Message sent:", result);
-
-    return result;
-  } catch (err) {
-    console.error("❌ Send message error:", err.response?.body || err);
-    throw err;
-  }
+  const user = await TelegramUser.findOne({ tempIds: tempId });
+  if (!user) throw new Error("User not linked to Telegram");
+  return bot.sendMessage(user.chatId, message);
 }
 
-module.exports = { bot, sendMessageToUser };
+module.exports = { bot, webhookHandler, sendMessageToUser };
