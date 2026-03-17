@@ -1,5 +1,6 @@
 require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
+const mongoose = require('mongoose'); // ensure mongoose is imported
 const TelegramUser = require('./models/TelegramUser');
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
@@ -9,6 +10,37 @@ const BASE_URL = process.env.BASE_URL || "https://www.rapidroutesltd.com";
 // Initialize bot (webhook mode)
 const bot = new TelegramBot(token);
 console.log("🌐 Telegram bot initialized for webhook mode");
+
+// =====================
+// MongoDB helper: ensure connection
+// =====================
+async function ensureDbConnected() {
+  if (mongoose.connection.readyState !== 1) {
+    await mongoose.connect(process.env.MONGO_URI);
+    console.log("✅ MongoDB connected");
+  }
+}
+
+// =====================
+// Helper to link Temp ID → Telegram user
+// =====================
+async function linkTempId(chatId, tempId, username) {
+  await ensureDbConnected();
+
+  let user = await TelegramUser.findOne({ chatId });
+  if (user) {
+    if (!user.tempIds.includes(tempId)) {
+      user.tempIds.push(tempId);
+      console.log("🔹 Added new tempId to existing user:", tempId);
+    }
+  } else {
+    user = new TelegramUser({ chatId, username, tempIds: [tempId] });
+    console.log("🔹 Created new TelegramUser:", chatId, tempId);
+  }
+
+  await user.save();
+  return user;
+}
 
 // =====================
 // Webhook handler for Vercel
@@ -43,16 +75,10 @@ bot.onText(/^\/start(?:\s+(.+))?/, async (msg, match) => {
       );
     }
 
-    // Save or update user in DB
-    let user = await TelegramUser.findOne({ chatId });
-    if (user) {
-      if (!user.tempIds.includes(tempId)) user.tempIds.push(tempId);
-    } else {
-      user = new TelegramUser({ chatId, username, tempIds: [tempId] });
-    }
-    await user.save();
+    // Link the user
+    await linkTempId(chatId, tempId, username);
 
-    // Auto-message to user with receiver link
+    // Auto-message to user
     await bot.sendMessage(chatId,
       `💙 Hello ${username}!\nTracking ID: ${tempId}\n` +
       `Complete your details here:\n${BASE_URL}/receiver.html?id=${tempId}`
@@ -76,7 +102,7 @@ bot.onText(/^\/start(?:\s+(.+))?/, async (msg, match) => {
 });
 
 // =====================
-// Forward messages to admin / handle replies
+// Forward messages / Admin replies
 // =====================
 bot.on('message', async (msg) => {
   try {
@@ -86,9 +112,9 @@ bot.on('message', async (msg) => {
       ? `@${msg.from.username}`
       : msg.from.first_name || "User";
 
-    if (text?.startsWith("/start")) return; // handled separately
+    if (text?.startsWith("/start")) return;
 
-    // Admin replying to user
+    // Admin reply
     if (chatId === adminId && msg.reply_to_message) {
       const repliedUserId =
         msg.reply_to_message.forward_from?.id ||
@@ -136,9 +162,18 @@ bot.onText(/^\/msg\s+(\S+)\s+(.+)/, async (msg, match) => {
 // Backend → User Messaging
 // =====================
 async function sendMessageToUser(tempId, message) {
+  await ensureDbConnected();
   const user = await TelegramUser.findOne({ tempIds: tempId });
   if (!user) throw new Error("User not linked to Telegram");
   return bot.sendMessage(user.chatId, message);
 }
 
-module.exports = { bot, webhookHandler, sendMessageToUser };
+// =====================
+// Backend helper to link user from API
+// =====================
+async function linkUserFromApi(tempId, chatId, username) {
+  // This can be called from your /api/notify route
+  return linkTempId(chatId, tempId, username);
+}
+
+module.exports = { bot, webhookHandler, sendMessageToUser, linkUserFromApi };
