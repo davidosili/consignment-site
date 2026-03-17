@@ -6,19 +6,16 @@ const token = process.env.TELEGRAM_BOT_TOKEN;
 const adminId = parseInt(process.env.TELEGRAM_ADMIN_ID, 10);
 const BASE_URL = process.env.BASE_URL || "https://www.rapidroutesltd.com";
 
-let bot = new TelegramBot(token);
+// Initialize bot (webhook mode)
+const bot = new TelegramBot(token);
 console.log("🌐 Telegram bot initialized for webhook mode");
 
 // =====================
-// Webhook Handler for Vercel
+// Webhook handler for Vercel
 // =====================
-// This function will be called by Vercel as a serverless API endpoint
 async function webhookHandler(req, res) {
   try {
-    // Telegram requires POST
     if (req.method !== 'POST') return res.status(405).send('Method Not Allowed');
-
-    // Process the incoming update
     await bot.processUpdate(req.body);
     return res.status(200).send('OK');
   } catch (err) {
@@ -28,12 +25,12 @@ async function webhookHandler(req, res) {
 }
 
 // =====================
-// /start Command
+// /start Command → link Temp ID
 // =====================
 bot.onText(/^\/start(?:\s+(.+))?/, async (msg, match) => {
   try {
     const chatId = msg.chat.id;
-    const tempId = match[1]; // TMP-XXXX
+    const tempId = match[1]; // TMP-XXXX passed from ?start=
     const username = msg.from.username
       ? `@${msg.from.username}`
       : msg.from.first_name || "User";
@@ -46,16 +43,16 @@ bot.onText(/^\/start(?:\s+(.+))?/, async (msg, match) => {
       );
     }
 
-    // Save or update user
+    // Save or update user in DB
     let user = await TelegramUser.findOne({ chatId });
-    if (!user) {
+    if (user) {
+      if (!user.tempIds.includes(tempId)) user.tempIds.push(tempId);
+    } else {
       user = new TelegramUser({ chatId, username, tempIds: [tempId] });
-    } else if (!user.tempIds.includes(tempId)) {
-      user.tempIds.push(tempId);
     }
     await user.save();
 
-    // Send auto message with receiver link
+    // Auto-message to user with receiver link
     await bot.sendMessage(chatId,
       `💙 Hello ${username}!\nTracking ID: ${tempId}\n` +
       `Complete your details here:\n${BASE_URL}/receiver.html?id=${tempId}`
@@ -74,11 +71,12 @@ bot.onText(/^\/start(?:\s+(.+))?/, async (msg, match) => {
 
   } catch (err) {
     console.error("❌ /start error:", err);
+    bot.sendMessage(msg.chat.id, '❌ Failed to link your Temp ID. Try again.');
   }
 });
 
 // =====================
-// Forwarding & Admin Replies
+// Forward messages to admin / handle replies
 // =====================
 bot.on('message', async (msg) => {
   try {
