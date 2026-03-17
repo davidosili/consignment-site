@@ -215,8 +215,6 @@
 </dialog>
 
 <script>
-  
-
   const API_URL = window.location.hostname === "localhost" ? "http://localhost:5000" : window.location.origin;
 
   const loader = document.getElementById("loader");
@@ -257,9 +255,9 @@
         currentId = id;
         currentReceiver = receiver;
 
-        // Send Telegram notification
+        // ✅ Updated Telegram URL
         try {
-          await fetch(`${API_URL}/api/telegram`, {
+          await fetch(`${API_URL}/api/notify/telegram/telegram`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
