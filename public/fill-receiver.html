@@ -1,189 +1,94 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Receiver Sign-Up | Rapid Route</title>
-  <link rel="stylesheet" href="fill-receiver.css" />
-  <style>
-    /* ===== Mobile & UI Fixes ===== */
-    * { box-sizing: border-box; }
-    body { margin: 0; font-family: "Inter", sans-serif; }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Receiver Sign-Up | Rapid Route</title>
+<link rel="stylesheet" href="fill-receiver.css" />
+<style>
+/* ===== Mobile & UI Fixes ===== */
+* { box-sizing: border-box; }
+body { margin: 0; font-family: "Inter", sans-serif; }
 
-    /* ===== Navbar Styles ===== */
-    .navbar {
-      width: 100%;
-      background-color: #ffffff; 
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
-      padding: 15px 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 999;
-    }
-    .navbar .logo { max-height: 50px; width: auto; }
+/* ===== Navbar Styles ===== */
+.navbar { width:100%; background:#fff; box-shadow:0 2px 10px rgba(0,0,0,0.08); padding:15px 20px; display:flex; align-items:center; justify-content:space-between; position:sticky; top:0; z-index:999; }
+.navbar .logo { max-height:50px; width:auto; }
 
-    main {
-      padding: 40px 15px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: calc(100vh - 80px);
-    }
+main { padding:40px 15px; display:flex; justify-content:center; align-items:center; min-height:calc(100vh - 80px); }
 
-    .form-card {
-      width: 100%;
-      max-width: 500px;
-      background: #fff;
-      padding: 30px 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-    }
+.form-card { width:100%; max-width:500px; background:#fff; padding:30px 20px; border-radius:12px; box-shadow:0 4px 15px rgba(0,0,0,0.05); }
+.form-group { margin-bottom:18px; }
+.form-group label { display:block; margin-bottom:6px; font-weight:500; font-size:0.95rem; color:#333; }
+.form-group input { width:100%; padding:12px; border:1px solid #ccc; border-radius:8px; font-size:1rem; transition:border-color 0.3s; }
+.form-group input:focus { outline:none; border-color:#007bff; }
+button[type="submit"] { width:100%; padding:14px; background:#007bff; color:#fff; border:none; border-radius:8px; font-size:1rem; font-weight:600; cursor:pointer; margin-top:10px; }
 
-    .form-group { margin-bottom: 18px; }
-    .form-group label {
-      display: block;
-      margin-bottom: 6px;
-      font-weight: 500;
-      font-size: 0.95rem;
-      color: #333;
-    }
-    .form-group input {
-      width: 100%;
-      padding: 12px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      font-size: 1rem;
-      transition: border-color 0.3s;
-    }
-    .form-group input:focus { outline: none; border-color: #007bff; }
+.loader { display:none; border:4px solid #f3f3f3; border-top:4px solid #007bff; border-radius:50%; width:40px; height:40px; animation:spin 1s linear infinite; margin:20px auto; }
+@keyframes spin { 0%{transform:rotate(0deg);}100%{transform:rotate(360deg);} }
 
-    button[type="submit"] {
-      width: 100%;
-      padding: 14px;
-      background: #007bff;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      margin-top: 10px;
-    }
+/* ===== Dialog ===== */
+dialog { position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); border:none; padding:0; border-radius:16px; max-width:420px; width:90%; background:#fff; animation:popIn 0.4s ease; box-shadow:0 15px 40px rgba(0,0,0,0.25); z-index:1000; }
+dialog::backdrop { background:rgba(0,0,0,0.6); backdrop-filter:blur(6px); }
+.dialog-container { padding:30px 20px; text-align:center; }
+.dialog-icon { width:80px; height:80px; margin:0 auto 15px; }
+.circle-bg { fill:none; stroke:#e9ecef; stroke-width:8; }
+.circle-progress { fill:none; stroke:#007bff; stroke-width:8; stroke-linecap:round; stroke-dasharray:339.29; stroke-dashoffset:339.29; animation:drawCircle 1s ease-out forwards; }
+.checkmark { fill:none; stroke:#007bff; stroke-width:8; stroke-linecap:round; stroke-linejoin:round; stroke-dasharray:60; stroke-dashoffset:60; animation:drawCheck 0.5s ease-out 1s forwards; }
+.dialog-title { color:#007bff; font-size:1.3rem; margin-top:5px; margin-bottom:10px; }
+.dialog-text { color:#444; font-size:0.95rem; margin-bottom:25px; line-height:1.4; }
 
-    .loader {
-      display: none;
-      border: 4px solid #f3f3f3;
-      border-top: 4px solid #007bff;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      animation: spin 1s linear infinite;
-      margin: 20px auto;
-    }
-    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+.dialog-buttons { display:flex; flex-direction:column; gap:12px; }
+@media(min-width:400px){ .dialog-buttons{ flex-direction:row; justify-content:center; } }
+.dialog-buttons button { width:100%; color:#fff; border:none; border-radius:8px; padding:12px 16px; cursor:pointer; font-weight:600; font-size:0.9rem; transition:0.3s ease; }
+.icon-btn { display:flex; align-items:center; gap:8px; justify-content:center; }
+.icon-btn svg { width:18px; height:18px; flex-shrink:0; }
+.icon-btn.telegram { background:#0088cc; }
+.icon-btn.telegram:hover { background:#006ea8; }
+.icon-btn.email { background:#007bff; }
+.icon-btn.email:hover { background:#0056b3; }
 
-    /* ===== Dialog ===== */
-    dialog {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      border: none;
-      padding: 0;
-      border-radius: 16px;
-      max-width: 420px;
-      width: 90%;
-      background: #fff;
-      animation: popIn 0.4s ease;
-      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
-      z-index: 1000;
-    }
-    dialog::backdrop {
-      background: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(6px);
-    }
-    .dialog-container { padding: 30px 20px; text-align: center; }
-    .dialog-icon { width: 80px; height: 80px; margin: 0 auto 15px; }
-    .circle-bg { fill: none; stroke: #e9ecef; stroke-width: 8; }
-    .circle-progress { fill: none; stroke: #007bff; stroke-width: 8; stroke-linecap: round; stroke-dasharray: 339.29; stroke-dashoffset: 339.29; animation: drawCircle 1s ease-out forwards; }
-    .checkmark { fill: none; stroke: #007bff; stroke-width: 8; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 60; stroke-dashoffset: 60; animation: drawCheck 0.5s ease-out 1s forwards; }
-    .dialog-title { color: #007bff; font-size: 1.3rem; margin-top: 5px; margin-bottom: 10px; }
-    .dialog-text { color: #444; font-size: 0.95rem; margin-bottom: 25px; line-height: 1.4; }
+@keyframes popIn{ from{transform:scale(0.8);opacity:0;} to{transform:scale(1);opacity:1;} }
+@keyframes drawCircle{ to{stroke-dashoffset:0;} }
+@keyframes drawCheck{ to{stroke-dashoffset:0;} }
 
-    .dialog-buttons {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    @media (min-width: 400px) {
-      .dialog-buttons { flex-direction: row; justify-content: center; }
-    }
-    .dialog-buttons button {
-      width: 100%;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      padding: 12px 16px;
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 0.9rem;
-      transition: 0.3s ease;
-    }
-    .icon-btn { display: flex; align-items: center; gap: 8px; justify-content: center; }
-    .icon-btn svg { width: 18px; height: 18px; flex-shrink: 0; }
-    .icon-btn.telegram { background: #0088cc; }
-    .icon-btn.telegram:hover { background: #006ea8; }
-    .icon-btn.email { background: #007bff; }
-    .icon-btn.email:hover { background: #0056b3; }
-
-    @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-    @keyframes drawCircle { to { stroke-dashoffset: 0; } }
-    @keyframes drawCheck { to { stroke-dashoffset: 0; } }
-  </style>
+</style>
 </head>
 <body>
-  <nav class="navbar" id="navbar">
-    <img class="logo" src="./img/logistics2-copy.png" alt="Logo" style="max-height: 50px;">
-  </nav>
 
-  <main>
-    <div class="form-card">
-      <h2 style="margin-top:0; text-align:center;">Receiver Registration</h2>
-      <p class="subtitle" style="text-align:center; color:#666; margin-bottom: 20px;">Please fill in the receiver’s details below</p>
+<nav class="navbar">
+  <img class="logo" src="./img/logistics2-copy.png" alt="Logo">
+</nav>
 
-      <form id="receiverForm" onsubmit="submitReceiver(event)">
-        <div class="form-grid">
-          <div class="form-group">
-            <label for="receiverName">Full Name</label>
-            <input type="text" id="receiverName" placeholder="John Doe" required />
-          </div>
+<main>
+  <div class="form-card">
+    <h2 style="text-align:center;">Receiver Registration</h2>
+    <p style="text-align:center;color:#666;margin-bottom:20px;">Please fill in the receiver’s details below</p>
 
-          <div class="form-group">
-            <label for="receiverAddress">Address</label>
-            <input type="text" id="receiverAddress" placeholder="123 Example Street" required />
-          </div>
+    <form id="receiverForm" onsubmit="submitReceiver(event)">
+      <div class="form-group">
+        <label for="receiverName">Full Name</label>
+        <input type="text" id="receiverName" placeholder="John Doe" required />
+      </div>
+      <div class="form-group">
+        <label for="receiverAddress">Address</label>
+        <input type="text" id="receiverAddress" placeholder="123 Example Street" required />
+      </div>
+      <div class="form-group">
+        <label for="receiverEmail">Email</label>
+        <input type="email" id="receiverEmail" placeholder="example@mail.com" required />
+      </div>
+      <div class="form-group">
+        <label for="receiverPhone">Phone Number</label>
+        <input type="tel" id="receiverPhone" placeholder="+234 801 234 5678" required />
+      </div>
 
-          <div class="form-group">
-            <label for="receiverEmail">Email</label>
-            <input type="email" id="receiverEmail" placeholder="example@mail.com" required />
-          </div>
+      <button type="submit">Submit Details</button>
+      <div class="loader" id="loader"></div>
+    </form>
+  </div>
+</main>
 
-          <div class="form-group">
-            <label for="receiverPhone">Phone Number</label>
-            <input type="tel" id="receiverPhone" placeholder="+234 801 234 5678" required />
-          </div>
-        </div>
-
-        <button type="submit">Submit Details</button>
-        <div class="loader" id="loader"></div>
-      </form>
-    </div>
-  </main>
-
-  <footer class="footer reveal" id="footer"></footer>
+<footer class="footer" id="footer"></footer>
 
 <dialog id="optionDialog">
   <div class="dialog-container">
@@ -195,126 +100,98 @@
       </svg>
     </div>
     <h2 class="dialog-title">Details Submitted Successfully!</h2>
-    <p class="dialog-text">Confirm your submission, and complete payment for parcel to be processed and scheduled for dispatch:</p>
+    <p class="dialog-text">You can confirm via Telegram or Email to complete the process.</p>
     <div class="dialog-buttons">
-      <button id="telegramBtn" class="icon-btn telegram">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-          <path fill="white" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.99 7.37-1.71 8.07c-.13.58-.47.72-.94.45l-2.6-1.92-1.25 1.2c-.14.14-.26.26-.53.26l.19-2.69 4.9-4.42c.21-.19-.05-.3-.33-.11l-6.06 3.82-2.62-.82c-.57-.18-.58-.57.12-.84l10.25-3.95c.47-.17.88.11.73.83z"/>
-        </svg>
-        Confirm via Telegram
-      </button>
-
-      <button id="emailBtn" class="icon-btn email">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-          <path fill="white" d="M20 4H4c-1.11 0-2 .9-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6c0-1.1-.89-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z"/>
-        </svg>
-        Confirm via Email
-      </button>
+      <button id="telegramBtn" class="icon-btn telegram">Confirm via Telegram</button>
+      <button id="emailBtn" class="icon-btn email">Confirm via Email</button>
     </div>
   </div>
 </dialog>
 
 <script>
-  const API_URL = window.location.hostname === "localhost" ? "http://localhost:5000" : window.location.origin;
+const API_URL = window.location.hostname === "localhost" ? "http://localhost:5000" : window.location.origin;
+const loader = document.getElementById("loader");
+const optionDialog = document.getElementById("optionDialog");
+let currentId = null;
+let currentReceiver = null;
 
-  const loader = document.getElementById("loader");
-  const optionDialog = document.getElementById("optionDialog");
+async function submitReceiver(e) {
+  e.preventDefault();
+  const urlParams = new URLSearchParams(window.location.search);
+  const id = urlParams.get("id");
+  if(!id) return alert("Invalid link.");
 
-  let currentId = null;
-  let currentReceiver = null;
+  const receiver = {
+    name: document.getElementById("receiverName").value.trim(),
+    address: document.getElementById("receiverAddress").value.trim(),
+    email: document.getElementById("receiverEmail").value.trim(),
+    phone: document.getElementById("receiverPhone").value.trim()
+  };
 
-  async function submitReceiver(event) {
-    event.preventDefault();
-    const urlParams = new URLSearchParams(window.location.search);
-    const id = urlParams.get("id");
-    if (!id) return alert("Invalid link.");
+  loader.style.display = "block";
+  document.querySelector("button[type='submit']").disabled = true;
 
-    const receiver = {
-      name: document.getElementById("receiverName").value,
-      address: document.getElementById("receiverAddress").value,
-      email: document.getElementById("receiverEmail").value,
-      phone: document.getElementById("receiverPhone").value,
-    };
+  try {
+    // 1️⃣ Save receiver to DB
+    const res = await fetch(`${API_URL}/api/receiver/submit/${id}`, {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({ receiver })
+    });
 
-    loader.style.display = "block";
-    document.querySelector("button[type='submit']").disabled = true;
+    loader.style.display = "none";
+    document.querySelector("button[type='submit']").disabled = false;
 
-    try {
-      // Submit receiver details
-      const res = await fetch(`${API_URL}/api/receiver/submit/${id}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ receiver }),
-      });
+    if(res.ok){
+      document.getElementById("receiverForm").reset();
+      currentId = id;
+      currentReceiver = receiver;
 
-      loader.style.display = "none";
-      document.querySelector("button[type='submit']").disabled = false;
-
-      if (res.ok) {
-        document.getElementById("receiverForm").reset();
-        currentId = id;
-        currentReceiver = receiver;
-
-        // ✅ Updated Telegram URL
-        try {
-          await fetch(`${API_URL}/api/notify/telegram/telegram`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              tempId: id,
-              name: receiver.name,
-              email: receiver.email,
-              phone: receiver.phone,
-              address: receiver.address,
-            }),
-          });
-          console.log("✅ Telegram notification sent");
-        } catch (telegramErr) {
-          console.warn("⚠️ Failed to send Telegram message:", telegramErr);
-        }
-
-        optionDialog.showModal();
-      } else {
-        const data = await res.json();
-        alert("❌ Error: " + (data.error || "Submission failed"));
+      // 2️⃣ Notify Telegram linked user if exists
+      try{
+        await fetch(`${API_URL}/api/notify/telegram/telegram`, {
+          method:"POST",
+          headers:{"Content-Type":"application/json"},
+          body:JSON.stringify({ tempId:id, ...receiver })
+        });
+        console.log("✅ Telegram notification sent");
+      }catch(err){
+        console.warn("⚠️ Telegram notification failed:", err);
       }
-    } catch (err) {
-      loader.style.display = "none";
-      document.querySelector("button[type='submit']").disabled = false;
-      alert("Network error. Please try again.");
+
+      optionDialog.showModal();
+    } else {
+      const data = await res.json();
+      alert("❌ Error: "+(data.error || "Submission failed"));
     }
+  } catch(err){
+    loader.style.display = "none";
+    document.querySelector("button[type='submit']").disabled = false;
+    alert("Network error. Please try again.");
   }
+}
 
-  document.getElementById("telegramBtn").onclick = () => {
-    if (!currentId) return alert("Missing ID. Please submit form again.");
-    const telegramLink = `https://t.me/Rapidroutes_bot?start=${currentId}`;
-    window.open(telegramLink, "_blank");
+// Telegram button
+document.getElementById("telegramBtn").onclick = () => {
+  if(!currentId) return alert("Missing ID. Submit form first.");
+  window.open(`https://t.me/Rapidroutes_bot?start=${currentId}`,"_blank");
+  optionDialog.close();
+};
+
+// Email button
+document.getElementById("emailBtn").onclick = async () => {
+  if(!currentReceiver || !currentId) return alert("Missing data. Submit form first.");
+  try{
+    const res = await fetch(`${API_URL}/api/notify/email`, {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({ tempId:currentId, ...currentReceiver })
+    });
+    if(res.ok) alert("✅ Email sent successfully!");
+    else alert("❌ Failed to send email.");
     optionDialog.close();
-  };
-
-  document.getElementById("emailBtn").onclick = async () => {
-    if (!currentReceiver || !currentId) return alert("Missing data. Please submit again.");
-    try {
-      const res = await fetch(`${API_URL}/api/notify/email`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: currentReceiver.email,
-          tempId: currentId,
-          name: currentReceiver.name,
-        }),
-      });
-
-      if (res.ok) {
-        alert("✅ Email sent successfully!");
-        optionDialog.close();
-      } else {
-        alert("❌ Failed to send email.");
-      }
-    } catch (err) {
-      alert("Network error sending email.");
-    }
-  };
+  }catch(err){ alert("Network error sending email."); }
+};
 </script>
 </body>
 </html>
