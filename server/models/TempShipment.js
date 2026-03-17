@@ -1,24 +1,20 @@
-// server/models/TempShipment.js
 const mongoose = require("mongoose");
 
 const tempShipmentSchema = new mongoose.Schema(
   {
     tempId: { type: String, required: true, unique: true },
-
     sender: {
       name: String,
       email: String,
       phone: String,
       address: String,
     },
-
     receiver: {
       name: String,
       email: String,
       phone: String,
       address: String,
     },
-
     items: [
       {
         description: String,
@@ -27,21 +23,13 @@ const tempShipmentSchema = new mongoose.Schema(
         quantity: { type: Number, default: 1 },
       },
     ],
-
-    status: {
-      type: String,
-      default: "Pending Receiver Info",
-    },
-
-    telegramChatId: {
-      type: String, // stores Telegram chat ID when linked
-      default: null,
-    },
+    status: { type: String, default: "Pending Receiver Info" },
+    telegramChatId: { type: String, default: null }, // Telegram linkage
   },
   { timestamps: true }
 );
 
-// Optional helper: check if shipment is linked to Telegram
+// Helper method
 tempShipmentSchema.methods.isLinkedToTelegram = function () {
   return !!this.telegramChatId;
 };
