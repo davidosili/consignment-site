@@ -34,11 +34,16 @@ const tempShipmentSchema = new mongoose.Schema(
     },
 
     telegramChatId: {
-      type: String, // store Telegram user ID when linked
+      type: String, // stores Telegram chat ID when linked
       default: null,
     },
   },
   { timestamps: true }
 );
+
+// Optional helper: check if shipment is linked to Telegram
+tempShipmentSchema.methods.isLinkedToTelegram = function () {
+  return !!this.telegramChatId;
+};
 
 module.exports = mongoose.model("TempShipment", tempShipmentSchema);
