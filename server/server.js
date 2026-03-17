@@ -10,11 +10,11 @@ const crypto = require("crypto");
 
 // Routes & Models
 const notifyRoutes = require("./routes/notifyRoutes");
-const telegramNotify = require('./routes/telegramNotify');
+const telegramNotify = require("./routes/telegramNotify"); // updated for TempShipment
 const Tracking = require("./models/Tracking");
 const Admin = require("./models/Admin");
 const TempShipment = require("./models/TempShipment");
-const { bot } = require('./telegramBot');
+const { bot } = require("./telegramBot");
 
 const app = express();
 
@@ -30,16 +30,18 @@ const allowedOrigins = [
   "https://www.rapidroutesltd.com",
 ];
 
-app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin) return callback(null, true);
-    if (!allowedOrigins.includes(origin)) {
-      return callback(new Error(`CORS blocked: ${origin}`), false);
-    }
-    return callback(null, true);
-  },
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      if (!allowedOrigins.includes(origin)) {
+        return callback(new Error(`CORS blocked: ${origin}`), false);
+      }
+      return callback(null, true);
+    },
+    credentials: true,
+  })
+);
 
 // ==========================================
 // 2. DB CONNECTION (CACHED)
@@ -77,7 +79,7 @@ const authMiddleware = (req, res, next) => {
 // ==========================================
 
 // Telegram (non-blocking)
-app.use('/api/notify/telegram', telegramNotify);
+app.use("/api/notify/telegram", telegramNotify);
 if (process.env.TELEGRAM_BOT_TOKEN) {
   app.post(`/bot${process.env.TELEGRAM_BOT_TOKEN}`, (req, res) => {
     bot.processUpdate(req.body);
@@ -150,7 +152,7 @@ app.get("/api/admin/tracking", authMiddleware, async (req, res) => {
   }
 });
 
-// -------- ✅ FIXED: PENDING SHIPMENTS --------
+// -------- PENDING SHIPMENTS --------
 app.get("/api/admin/pending-shipments", authMiddleware, async (req, res) => {
   try {
     await connectToDB();
@@ -177,7 +179,7 @@ app.post("/api/admin/approve-shipment/:id", authMiddleware, async (req, res) => 
       destination: temp.receiver?.address || "Unknown",
       location: "Warehouse",
       status: "Pending",
-      updates: [{ status: "Created", timestamp: new Date() }]
+      updates: [{ status: "Created", timestamp: new Date() }],
     });
 
     // respond FIRST (important for Vercel)
@@ -189,20 +191,21 @@ app.post("/api/admin/approve-shipment/:id", authMiddleware, async (req, res) => 
         service: "gmail",
         auth: {
           user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS
-        }
+          pass: process.env.EMAIL_PASS,
+        },
       });
 
-      transporter.sendMail({
-        from: process.env.EMAIL_USER,
-        to: temp.receiver.email,
-        subject: "Shipment Approved",
-        html: `<p>Tracking: ${tracking.trackingNumber}</p>`
-      }).catch(console.error);
+      transporter
+        .sendMail({
+          from: process.env.EMAIL_USER,
+          to: temp.receiver.email,
+          subject: "Shipment Approved",
+          html: `<p>Tracking: ${tracking.trackingNumber}</p>`,
+        })
+        .catch(console.error);
     }
 
     await TempShipment.findByIdAndDelete(temp._id);
-
   } catch (err) {
     res.status(500).json({ error: "Approval failed" });
   }
@@ -230,7 +233,7 @@ app.post("/api/admin/shipment-link", authMiddleware, async (req, res) => {
       tempId,
       sender: req.body.sender,
       items: req.body.items || [],
-      status: "Pending Receiver Info"
+      status: "Pending Receiver Info",
     });
 
     res.json({ tempId });
