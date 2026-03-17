@@ -28,63 +28,79 @@ bot.on("polling_error", err => console.error("❌ Telegram polling error:", err)
 bot.on("webhook_error", err => console.error("❌ Telegram webhook error:", err));
 
 // =====================
+// ✅ START COMMAND (FIXED)
+// =====================
+bot.onText(/^\/start(?:\s+(.+))?/, async (msg, match) => {
+  try {
+    const chatId = msg.chat.id;
+    const tempId = match[1]; // TMP-XXXX
+    const username = msg.from.username
+      ? `@${msg.from.username}`
+      : msg.from.first_name || "User";
+
+    console.log("🚀 Start triggered:", { chatId, tempId });
+
+    if (!tempId) {
+      return bot.sendMessage(chatId,
+        "👋 Welcome to Rapid Routes!\nPlease use your shipment link."
+      );
+    }
+
+    // 🔗 Save or update user
+    let user = await TelegramUser.findOne({ chatId });
+
+    if (!user) {
+      user = new TelegramUser({
+        chatId,
+        username,
+        tempIds: [tempId],
+      });
+    } else {
+      if (!user.tempIds.includes(tempId)) {
+        user.tempIds.push(tempId);
+      }
+    }
+
+    await user.save();
+    console.log("✅ User linked:", user);
+
+    // ✅ Send automatic message
+    await bot.sendMessage(chatId,
+      `💙 Hello ${username}!\n\n` +
+      `Tracking ID: ${tempId}\n\n` +
+      `Complete your details below:\n` +
+      `${BASE_URL}/receiver.html?id=${tempId}`
+    );
+
+    // ✅ Notify admin
+    await bot.sendMessage(adminId,
+      `📩 New Telegram Connection
+━━━━━━━━━━━━━━━
+🆔 Temp ID: ${tempId}
+👤 Username: ${username}
+💬 Chat ID: ${chatId}`
+    );
+
+  } catch (err) {
+    console.error("❌ Start error:", err.response?.body || err);
+  }
+});
+
+// =====================
 // Incoming Messages
 // =====================
 bot.on("message", async (msg) => {
   try {
     const chatId = msg.chat.id;
     const text = msg.text?.trim();
-    const username = msg.from.username ? `@${msg.from.username}` : msg.from.first_name || "User";
+    const username = msg.from.username
+      ? `@${msg.from.username}`
+      : msg.from.first_name || "User";
 
-    console.log("📩 Incoming message:", { chatId, text, username });
+    console.log("📩 Incoming message:", { chatId, text });
 
-    // -----------------
-    // Handle /start TMP-XXXX
-    // -----------------
-    if (text?.startsWith("/start")) {
-      const parts = text.split(" ");
-      const tempId = parts[1];
-
-      if (!tempId) {
-        return bot.sendMessage(chatId, "👋 Please use the correct link with your Temp ID.");
-      }
-
-      console.log(`🔹 Linking user: chatId=${chatId}, tempId=${tempId}`);
-
-      // ✅ NEW LOGIC (IMPORTANT)
-      let user = await TelegramUser.findOne({ chatId });
-
-      if (!user) {
-        user = new TelegramUser({
-          chatId,
-          username,
-          tempIds: [tempId],
-        });
-      } else {
-        if (!user.tempIds.includes(tempId)) {
-          user.tempIds.push(tempId);
-        }
-      }
-
-      await user.save();
-      console.log("✅ Telegram user saved:", user);
-
-      // ✅ Send welcome message
-      await bot.sendMessage(chatId,
-        `💙 Hello ${username}!\nYou are now connected to support.\nTracking ID: ${tempId}`
-      );
-
-      // ✅ Notify admin
-      await bot.sendMessage(adminId,
-        `📩 New Telegram Connection
-━━━━━━━━━━━━━━━
-🆔 Temp ID: ${tempId}
-👤 Username: ${username}
-💬 Chat ID: ${chatId}`
-      );
-
-      return;
-    }
+    // 🚫 Ignore /start here (handled above)
+    if (text?.startsWith("/start")) return;
 
     // -----------------
     // Admin replies to user
@@ -154,7 +170,6 @@ bot.onText(/^\/msg\s+(\S+)\s+(.+)/, async (msg, match) => {
 
     console.log(`🔹 Admin sending to ${tempId}: ${messageText}`);
 
-    // ✅ UPDATED lookup
     const user = await TelegramUser.findOne({
       tempIds: tempId
     });
@@ -178,7 +193,6 @@ async function sendMessageToUser(tempId, message) {
   try {
     console.log(`🔹 Sending to tempId=${tempId}`);
 
-    // ✅ UPDATED lookup
     const user = await TelegramUser.findOne({
       tempIds: tempId
     });
