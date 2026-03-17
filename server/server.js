@@ -10,7 +10,7 @@ const crypto = require("crypto");
 
 // Routes & Models
 const notifyRoutes = require("./routes/notifyRoutes");
-const telegramNotify = require("./routes/telegramNotify"); // updated for TempShipment
+const telegramNotify = require("./routes/telegramNotify"); // Telegram notifications
 const Tracking = require("./models/Tracking");
 const Admin = require("./models/Admin");
 const TempShipment = require("./models/TempShipment");
@@ -78,8 +78,9 @@ const authMiddleware = (req, res, next) => {
 // 4. ROUTES
 // ==========================================
 
-// Telegram (non-blocking)
+// Telegram webhook
 app.use("/api/notify/telegram", telegramNotify);
+
 if (process.env.TELEGRAM_BOT_TOKEN) {
   app.post(`/bot${process.env.TELEGRAM_BOT_TOKEN}`, (req, res) => {
     bot.processUpdate(req.body);
@@ -134,7 +135,6 @@ app.post("/api/admin/login", async (req, res) => {
     if (!ok) return res.status(401).json({ error: "Invalid" });
 
     const token = jwt.sign({ id: admin._id }, SECRET, { expiresIn: "1h" });
-
     res.json({ token });
   } catch {
     res.status(500).json({ error: "Login failed" });
@@ -182,10 +182,9 @@ app.post("/api/admin/approve-shipment/:id", authMiddleware, async (req, res) => 
       updates: [{ status: "Created", timestamp: new Date() }],
     });
 
-    // respond FIRST (important for Vercel)
     res.json({ message: "Approved", trackingNumber: tracking.trackingNumber });
 
-    // send email AFTER response (non-blocking)
+    // Non-blocking email
     if (temp.receiver?.email) {
       const transporter = nodemailer.createTransport({
         service: "gmail",
@@ -207,6 +206,7 @@ app.post("/api/admin/approve-shipment/:id", authMiddleware, async (req, res) => 
 
     await TempShipment.findByIdAndDelete(temp._id);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: "Approval failed" });
   }
 });
@@ -270,5 +270,4 @@ app.get("/", (req, res) =>
 
 app.get("/ping", (req, res) => res.send("pong"));
 
-// ==========================================
 module.exports = app;
