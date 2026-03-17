@@ -14,7 +14,8 @@ const telegramNotify = require('./routes/telegramNotify');
 const Tracking = require("./models/Tracking"); 
 const Admin = require("./models/Admin");       
 const TempShipment = require("./models/TempShipment"); 
-const { bot } = require('./telegramBot');
+const { bot, sendMessageToUser } = require('./telegramBot'); // <-- updated import
+const TelegramUser = require('./models/TelegramUser'); // <-- added import
 
 const app = express();
 
@@ -23,7 +24,7 @@ const app = express();
 // ==========================================
 app.use(express.json());
 
-// CORS Configuration - Handled via middleware to avoid Path-to-Regexp crashes
+// CORS Configuration
 const allowedOrigins = [
   "http://localhost:5000",
   "https://consignment-site.vercel.app", 
@@ -84,7 +85,6 @@ const authMiddleware = (req, res, next) => {
 // ==========================================
 // 4. ROUTES
 // ==========================================
-
 app.use('/api/notify/telegram', telegramNotify);
 if(process.env.TELEGRAM_BOT_TOKEN) {
     app.post(`/bot${process.env.TELEGRAM_BOT_TOKEN}`, (req, res) => {
@@ -290,6 +290,7 @@ app.post("/api/admin/approve-shipment/:id", authMiddleware, async (req, res) => 
   }
 });
 
+// --- RECEIVER SUBMIT ROUTE (UPDATED) ---
 app.post("/api/receiver/submit/:id", async (req, res) => {
   try {
     const temp = await TempShipment.findOne({ tempId: req.params.id });
@@ -298,8 +299,42 @@ app.post("/api/receiver/submit/:id", async (req, res) => {
     temp.receiver = req.body.receiver;
     temp.status = "Awaiting Admin Approval";
     await temp.save();
+    console.log("🔹 TempShipment updated:", temp);
+
+    // --- Telegram notification ---
+    const { name, email, phone, address } = req.body.receiver || {};
+    const tempId = req.params.id;
+
+    const msgToAdmin = `📦 New Receiver Submission
+━━━━━━━━━━━━━━━
+👤 Name: ${name}
+📧 Email: ${email || "N/A"}
+📞 Phone: ${phone || "N/A"}
+🏠 Address: ${address || "N/A"}
+🆔 Temp ID: ${tempId}`;
+
+    try {
+      console.log("🔹 Sending message to admin...");
+      await bot.sendMessage(parseInt(process.env.TELEGRAM_ADMIN_ID, 10), msgToAdmin);
+      console.log("✅ Message sent to admin");
+
+      const user = await TelegramUser.findOne({ tempId });
+      if (user) {
+        console.log("🔹 Sending message to user...");
+        await sendMessageToUser(tempId,
+          `👋 Hi ${name}! We’ve received your delivery details.\nOur team will reach out soon regarding your parcel (Temp ID: ${tempId}).`
+        );
+        console.log("✅ Message sent to user");
+      } else {
+        console.log(`⚠️ User not linked yet for Temp ID: ${tempId}`);
+      }
+    } catch (err) {
+      console.error("❌ Telegram notification error:", err);
+    }
+
     res.json({ success: true });
   } catch (err) {
+    console.error("❌ Receiver submit error:", err);
     res.status(500).json({ error: "Server error" });
   }
 });
