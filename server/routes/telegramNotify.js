@@ -2,7 +2,7 @@
 require('dotenv').config();
 const express = require('express');
 const router = express.Router();
-const { bot, sendMessageToUser } = require('../telegram'); // updated import
+const { bot, sendMessageToUser } = require('../telegramBot'); // updated import
 const TelegramUser = require('../models/TelegramUser'); // import the MongoDB model
 
 const adminId = parseInt(process.env.TELEGRAM_ADMIN_ID, 10);
