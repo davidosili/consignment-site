@@ -6,35 +6,34 @@ const jwt = require("jsonwebtoken");
 const cors = require("cors");
 const path = require("path");
 const nodemailer = require("nodemailer");
-const crypto = require("crypto");
 
-// Route & Model Imports
-const notifyRoutes = require("./routes/notifyRoutes"); 
-const telegramNotify = require('./routes/telegramNotify');
-const Tracking = require("./models/Tracking"); 
-const Admin = require("./models/Admin");       
-const TempShipment = require("./models/TempShipment"); 
-const TelegramUser = require('./models/TelegramUser'); 
-const { bot, sendMessageToUser } = require('./telegramBot');
+// Models & Routes
+const notifyRoutes = require("./routes/notifyRoutes");
+const telegramNotify = require("./routes/telegramNotify");
+const Tracking = require("./models/Tracking");
+const Admin = require("./models/Admin");
+const TempShipment = require("./models/TempShipment");
+const TelegramUser = require("./models/TelegramUser");
+const { bot, sendMessageToUser } = require("./telegramBot");
 
 const app = express();
 
-// ==========================================
+// =====================
 // 1. GLOBAL MIDDLEWARE
-// ==========================================
+// =====================
 app.use(express.json());
 
 const allowedOrigins = [
   "http://localhost:5000",
-  "https://consignment-site.vercel.app", 
-  "https://rapidroutesltd.com",          
-  "https://www.rapidroutesltd.com",      
+  "https://consignment-site.vercel.app",
+  "https://rapidroutesltd.com",
+  "https://www.rapidroutesltd.com"
 ];
 
 app.use(cors({
   origin: function(origin, callback) {
     if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) === -1) {
+    if (!allowedOrigins.includes(origin)) {
       return callback(new Error(`CORS policy: This origin is not allowed: ${origin}`), false);
     }
     return callback(null, true);
@@ -46,9 +45,9 @@ app.use(cors({
   optionsSuccessStatus: 204
 }));
 
-// ==========================================
+// =====================
 // 2. DATABASE CONNECTION
-// ==========================================
+// =====================
 const MONGO_URI = process.env.MONGO_URI;
 const SECRET = process.env.SECRET;
 const BASE_URL = process.env.BASE_URL || "https://www.rapidroutesltd.com";
@@ -61,9 +60,9 @@ if (!MONGO_URI || !SECRET) {
     .catch(err => console.error("❌ MongoDB connection error:", err.message));
 }
 
-// ==========================================
+// =====================
 // 3. AUTH MIDDLEWARE
-// ==========================================
+// =====================
 const authMiddleware = (req, res, next) => {
   const authHeader = req.headers.authorization;
   if (!authHeader) return res.status(401).json({ error: "No token provided" });
@@ -78,11 +77,13 @@ const authMiddleware = (req, res, next) => {
   }
 };
 
-// ==========================================
+// =====================
 // 4. ROUTES
-// ==========================================
+// =====================
 app.use('/api/notify/telegram', telegramNotify);
-if(process.env.TELEGRAM_BOT_TOKEN) {
+
+// Telegram webhook
+if (process.env.TELEGRAM_BOT_TOKEN) {
   app.post(`/bot${process.env.TELEGRAM_BOT_TOKEN}`, (req, res) => {
     bot.processUpdate(req.body);
     res.sendStatus(200);
@@ -97,19 +98,7 @@ app.get("/api/tracking/:trackingNumber", async (req, res) => {
     const record = await Tracking.findOne({ trackingNumber: req.params.trackingNumber });
     if (!record) return res.status(404).json({ message: "Parcel not yet collected." });
 
-    res.json({
-      trackingNumber: record.trackingNumber,
-      sender: record.sender,
-      receiver: record.receiver,
-      origin: record.origin,
-      destination: record.destination,
-      location: record.location,
-      status: record.status,
-      expectedDelivery: record.expectedDelivery,
-      createdAt: record.createdAt,
-      updates: record.updates || [],
-      items: record.items || []
-    });
+    res.json(record);
   } catch (err) {
     console.error("Lookup error:", err);
     res.status(500).json({ message: "Server error" });
@@ -120,6 +109,8 @@ app.get("/api/tracking/:trackingNumber", async (req, res) => {
 app.post("/api/admin/signup", async (req, res) => {
   try {
     const { username, password } = req.body;
+    if (!username || !password) return res.status(400).json({ error: "Missing fields" });
+
     const existing = await Admin.findOne({ username });
     if (existing) return res.status(400).json({ error: "Username already exists" });
 
@@ -149,7 +140,7 @@ app.post("/api/admin/login", async (req, res) => {
   }
 });
 
-// --- RECEIVER SUBMIT ROUTE (UPDATED) ---
+// --- RECEIVER SUBMIT ROUTE ---
 app.post("/api/receiver/submit/:id", async (req, res) => {
   try {
     const temp = await TempShipment.findOne({ tempId: req.params.id });
@@ -158,11 +149,11 @@ app.post("/api/receiver/submit/:id", async (req, res) => {
     temp.receiver = req.body.receiver;
     temp.status = "Awaiting Admin Approval";
     await temp.save();
-    console.log("🔹 TempShipment updated:", temp);
 
     const { name, email, phone, address } = req.body.receiver || {};
     const tempId = req.params.id;
 
+    // Notify admin
     const adminMsg = `📦 New Receiver Submission
 ━━━━━━━━━━━━━━━
 👤 Name: ${name}
@@ -171,7 +162,6 @@ app.post("/api/receiver/submit/:id", async (req, res) => {
 🏠 Address: ${address || "N/A"}
 🆔 Temp ID: ${tempId}`;
 
-    // Notify admin
     try {
       if (process.env.TELEGRAM_ADMIN_ID) {
         await bot.sendMessage(parseInt(process.env.TELEGRAM_ADMIN_ID, 10), adminMsg);
@@ -181,7 +171,7 @@ app.post("/api/receiver/submit/:id", async (req, res) => {
       console.warn("⚠️ Telegram admin notification failed:", err.message);
     }
 
-    // Notify sender
+    // Notify sender via Telegram
     const telegramUser = await TelegramUser.findOne({ tempId });
     if (telegramUser?.chatId) {
       try {
@@ -193,7 +183,7 @@ app.post("/api/receiver/submit/:id", async (req, res) => {
         console.warn("⚠️ Telegram message to sender failed:", err.message);
       }
     } else if (email) {
-      // Fallback email if Telegram not linked
+      // Fallback: email
       try {
         const transporter = nodemailer.createTransport({
           host: "smtp-relay.brevo.com",
@@ -209,7 +199,7 @@ app.post("/api/receiver/submit/:id", async (req, res) => {
         });
         console.log("✅ Sender notified via email (fallback)");
       } catch (err) {
-        console.warn("⚠️ Email notification to sender failed:", err.message);
+        console.warn("⚠️ Email notification failed:", err.message);
       }
     }
 
@@ -233,8 +223,12 @@ app.post("/api/admin/shipment-link", authMiddleware, async (req, res) => {
           cost: it.cost || "0",
           quantity: it.quantity || 1
         }))
-      : req.body.item ? [{ description: req.body.item.description || "", weight: req.body.item.weight || "", cost: req.body.item.cost || "0", quantity: req.body.item.quantity || 1 }]
-      : [];
+      : req.body.item ? [{
+          description: req.body.item.description || "",
+          weight: req.body.item.weight || "",
+          cost: req.body.item.cost || "0",
+          quantity: req.body.item.quantity || 1
+        }] : [];
 
     if (!itemArray.length) return res.status(400).json({ error: "At least one item is required." });
 
@@ -270,16 +264,16 @@ app.post("/api/contact", async (req, res) => {
   }
 });
 
-// ==========================================
+// =====================
 // 5. STATIC FILES
-// ==========================================
+// =====================
 app.use(express.static(path.join(__dirname, "../public")));
 app.get("/", (req, res) => res.sendFile(path.join(__dirname, "../public/landing.html")));
 app.get("/ping", (req,res) => res.send("pong"));
 
-// ==========================================
+// =====================
 // 6. START SERVER
-// ==========================================
+// =====================
 const PORT = process.env.PORT || 5000;
 if (process.env.NODE_ENV !== "production" && !process.env.VERCEL) {
   app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
