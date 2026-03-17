@@ -9,7 +9,9 @@ const isProduction = process.env.NODE_ENV === 'production';
 
 let bot;
 
-// Initialize bot
+// =====================
+// Initialize Telegram Bot
+// =====================
 if (isProduction) {
   bot = new TelegramBot(token);
   bot.setWebHook(`${BASE_URL}/bot${token}`);
@@ -19,12 +21,14 @@ if (isProduction) {
   console.log("💻 Telegram bot running in polling mode");
 }
 
-// Handle polling and webhook errors
+// =====================
+// Error Handling
+// =====================
 bot.on("polling_error", err => console.error("❌ Telegram polling error:", err));
 bot.on("webhook_error", err => console.error("❌ Telegram webhook error:", err));
 
 // =====================
-// Incoming messages
+// Incoming Messages
 // =====================
 bot.on("message", async (msg) => {
   try {
@@ -35,7 +39,7 @@ bot.on("message", async (msg) => {
     console.log("📩 Incoming message:", { chatId, text, username });
 
     // -----------------
-    // /start TMP-XXXX
+    // Handle /start TMP-XXXX
     // -----------------
     if (text?.startsWith("/start")) {
       const parts = text.split(" ");
@@ -52,10 +56,13 @@ bot.on("message", async (msg) => {
         { upsert: true }
       );
 
+      // ✅ Auto message to user
       await bot.sendMessage(chatId,
         `💙 Hello ${username}!\nYou are now connected to our support. Please wait while we verify your parcel (Temp ID: ${tempId}).`
       );
+      console.log(`✅ Welcome message sent to user: ${tempId}`);
 
+      // ✅ Notify admin
       await bot.sendMessage(adminId,
         `📩 New Telegram Connection:
 ━━━━━━━━━━━━━━━
@@ -63,6 +70,7 @@ bot.on("message", async (msg) => {
 👤 Username: ${username}
 💬 Chat ID: ${chatId}`
       );
+      console.log(`✅ Admin notified of new user connection: ${tempId}`);
 
       return;
     }
@@ -72,6 +80,7 @@ bot.on("message", async (msg) => {
     // -----------------
     if (chatId === adminId && msg.reply_to_message) {
       const repliedUserId = msg.reply_to_message.forward_from?.id || msg.reply_to_message?.chat?.id;
+
       if (repliedUserId) {
         try {
           if (text) await bot.sendMessage(repliedUserId, text);
@@ -87,32 +96,33 @@ bot.on("message", async (msg) => {
           }
           console.log("✅ Admin reply sent successfully");
         } catch (err) {
-          console.error("❌ Failed to send media from admin to user:", err);
+          console.error("❌ Failed to send media from admin to user:", err.response?.body || err);
         }
       }
       return;
     }
 
     // -----------------
-    // Forward user messages to admin
+    // Forward messages from user to admin
     // -----------------
     if (chatId !== adminId) {
       console.log(`🔹 Forwarding message from user chatId=${chatId} to admin`);
+
       await bot.forwardMessage(adminId, chatId, msg.message_id);
 
       if (msg.caption) await bot.sendMessage(adminId, `📝 Caption: ${msg.caption}`);
-      await bot.sendMessage(adminId,
+      if (text) await bot.sendMessage(adminId,
         `💬 Message from ${username} (Chat ID: ${chatId})\nReply to this message to respond.`
       );
     }
 
   } catch (err) {
-    console.error("❌ Error processing incoming message:", err);
+    console.error("❌ Error processing incoming message:", err.response?.body || err);
   }
 });
 
 // =====================
-// /msg TMP-XXXX <text> (admin only)
+// Admin command: /msg TMP-XXXX <text>
 // =====================
 bot.onText(/^\/msg\s+(\S+)\s+(.+)/, async (msg, match) => {
   try {
@@ -127,16 +137,17 @@ bot.onText(/^\/msg\s+(\S+)\s+(.+)/, async (msg, match) => {
 
     if (!user) return bot.sendMessage(adminId, `❌ No user linked for ${tempId}.`);
 
-    await bot.sendMessage(user.chatId, `📬 Admin: ${messageText}`);
+    await bot.sendMessage(parseInt(user.chatId, 10), `📬 Admin: ${messageText}`);
     console.log("✅ Message sent to user via /msg");
+
     await bot.sendMessage(adminId, `✅ Message sent to ${tempId}`);
   } catch (err) {
-    console.error("❌ Error in /msg command:", err);
+    console.error("❌ Error in /msg command:", err.response?.body || err);
   }
 });
 
 // =====================
-// Send message from backend
+// Backend can send message to user
 // =====================
 async function sendMessageToUser(tempId, message) {
   try {
@@ -145,11 +156,12 @@ async function sendMessageToUser(tempId, message) {
 
     if (!user) throw new Error("User not linked to Telegram yet.");
 
-    const result = await bot.sendMessage(user.chatId, message);
-    console.log("✅ Message successfully sent to user:", result);
+    const chatId = parseInt(user.chatId, 10);
+    const result = await bot.sendMessage(chatId, message);
+    console.log(`✅ Message successfully sent to user (${chatId}):`, result);
     return result;
   } catch (err) {
-    console.error("❌ Error sending message to user:", err);
+    console.error("❌ Error sending message to user:", err.response?.body || err);
     throw err;
   }
 }
