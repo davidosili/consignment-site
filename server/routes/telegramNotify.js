@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { sendMessageToUser } = require("../telegramBot");
+const { sendMessageToUser, linkUserFromApi } = require("../telegramBot");
 const TelegramUser = require("../models/TelegramUser");
 const TelegramBot = require("node-telegram-bot-api");
 
@@ -14,7 +14,7 @@ router.post("/telegram", async (req, res) => {
   try {
     console.log("📨 /telegram route called with body:", req.body);
 
-    const { tempId, name, email, phone, address } = req.body;
+    const { tempId, chatId, name, email, phone, address } = req.body;
 
     if (!tempId || !name) {
       console.log("❌ Missing tempId or name in request body");
@@ -35,22 +35,29 @@ router.post("/telegram", async (req, res) => {
       .then(() => console.log("✅ Message sent to admin"))
       .catch(err => console.error("❌ Admin message failed:", err));
 
-    // -------------------- Find user in DB --------------------
+    // -------------------- Ensure user is linked --------------------
     console.log(`🔍 Looking for user with tempId=${tempId} in DB...`);
-    const user = await TelegramUser.findOne({ tempIds: tempId });
+    let user = await TelegramUser.findOne({ tempIds: tempId });
 
+    if (!user) {
+      if (!chatId) {
+        console.log(`⚠️ User not linked and no chatId provided for Temp ID: ${tempId}`);
+      } else {
+        console.log("➡️ Linking user automatically...");
+        user = await linkUserFromApi(tempId, chatId, `User`);
+        console.log("✅ User linked:", user);
+      }
+    }
+
+    // -------------------- Send message to user --------------------
     if (user) {
-      console.log("➡️ Sending message to user...");
       sendMessageToUser(
         tempId,
         `👋 Hi ${name}! We’ve received your delivery details.\n` +
-          `Our team will reach out soon regarding your parcel (Temp ID: ${tempId}).\n` +
-          `Complete your details here: ${BASE_URL}/receiver.html?id=${tempId}`
-      ).catch(err => console.error("❌ User message failed:", err));
-
-      console.log("✅ Triggered message to user");
-    } else {
-      console.log(`⚠️ User not linked yet for Temp ID: ${tempId}`);
+        `Our team will reach out soon regarding your parcel (Temp ID: ${tempId}).\n` +
+        `Complete your details here: ${BASE_URL}/receiver.html?id=${tempId}`
+      ).then(() => console.log("✅ Triggered message to user"))
+        .catch(err => console.error("❌ User message failed:", err));
     }
 
     res.status(200).json({ success: true });
