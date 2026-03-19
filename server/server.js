@@ -91,9 +91,17 @@ if (process.env.TELEGRAM_BOT_TOKEN) {
     .catch(err => console.error("❌ Failed to set Telegram webhook:", err));
 
   // 2. Catch the messages using the clean path
-  app.post(webhookPath, (req, res) => {
-    console.log("🔔 TELEGRAM KNOCKING ON WEBHOOK! Message received:", req.body.message?.text);
-    bot.processUpdate(req.body);
+  app.post(webhookPath, async (req, res) => {
+    console.log("🔔 TELEGRAM KNOCKING! Message:", JSON.stringify(req.body.message));
+    
+    try {
+      // Add 'await' so Vercel does not kill the server before the bot sends the message!
+      await bot.processUpdate(req.body); 
+    } catch (error) {
+      console.error("Bot Error:", error);
+    }
+    
+    // ONLY send 200 after the bot has fully finished talking
     res.sendStatus(200);
   });
 }
@@ -402,3 +410,4 @@ app.get("/", (req, res) =>
 app.get("/ping", (req, res) => res.send("pong"));
 
 module.exports = app;
+
