@@ -172,13 +172,24 @@ app.post("/api/admin/approve-shipment/:id", authMiddleware, async (req, res) => 
     const temp = await TempShipment.findById(req.params.id);
     if (!temp) return res.status(404).json({ error: "Not found" });
 
+    // SAFETY FALLBACK: Ensure all items have an itemId so MongoDB doesn't crash on old data
+    const safeItems = (temp.items || []).map(item => {
+      // If it's a mongoose subdocument, convert it to a standard object first
+      const itemObj = item.toObject ? item.toObject() : item;
+      return {
+        ...itemObj,
+        itemId: itemObj.itemId || "ITEM-" + crypto.randomUUID().slice(0, 8) 
+      };
+    });
+
     const tracking = await Tracking.create({
       sender: temp.sender,
       receiver: temp.receiver,
-      origin: temp.sender?.address || "Unknown",
-      destination: temp.receiver?.address || "Unknown",
+      origin: temp.origin || temp.sender?.address || "Unknown",
+      destination: temp.destination || temp.receiver?.address || "Unknown",
       location: "Warehouse",
       status: "Pending",
+      items: safeItems, // <-- FIXED: Items are now transferred over
       updates: [{ status: "Created", timestamp: new Date() }],
     });
 
@@ -233,6 +244,8 @@ app.post("/api/admin/shipment-link", authMiddleware, async (req, res) => {
       tempId,
       sender: req.body.sender,
       items: req.body.items || [],
+      origin: req.body.origin,           // <-- FIXED: Save origin
+      destination: req.body.destination, // <-- FIXED: Save destination
       status: "Pending Receiver Info",
     });
 
@@ -271,3 +284,4 @@ app.get("/", (req, res) =>
 app.get("/ping", (req, res) => res.send("pong"));
 
 module.exports = app;
+
