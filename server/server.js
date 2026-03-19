@@ -82,14 +82,16 @@ const authMiddleware = (req, res, next) => {
 app.use("/api/notify/telegram", telegramNotify);
 
 if (process.env.TELEGRAM_BOT_TOKEN) {
-  // 1. Tell Telegram EXACTLY where to send the user's messages!
-  const webhookUrl = `${BASE_URL}/bot${process.env.TELEGRAM_BOT_TOKEN}`;
+  // 1. Create a clean, safe path without colons!
+  const webhookPath = `/api/telegram-webhook-secure`; 
+  const webhookUrl = `${BASE_URL}${webhookPath}`;
+  
   bot.setWebHook(webhookUrl)
     .then(() => console.log(`✅ Telegram Webhook successfully set to: ${webhookUrl}`))
     .catch(err => console.error("❌ Failed to set Telegram webhook:", err));
 
-  // 2. Catch the messages when Telegram forwards them here
-  app.post(`/bot${process.env.TELEGRAM_BOT_TOKEN}`, (req, res) => {
+  // 2. Catch the messages using the clean path
+  app.post(webhookPath, (req, res) => {
     bot.processUpdate(req.body);
     res.sendStatus(200);
   });
