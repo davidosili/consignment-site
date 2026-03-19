@@ -82,6 +82,13 @@ const authMiddleware = (req, res, next) => {
 app.use("/api/notify/telegram", telegramNotify);
 
 if (process.env.TELEGRAM_BOT_TOKEN) {
+  // 1. Tell Telegram EXACTLY where to send the user's messages!
+  const webhookUrl = `${BASE_URL}/bot${process.env.TELEGRAM_BOT_TOKEN}`;
+  bot.setWebHook(webhookUrl)
+    .then(() => console.log(`✅ Telegram Webhook successfully set to: ${webhookUrl}`))
+    .catch(err => console.error("❌ Failed to set Telegram webhook:", err));
+
+  // 2. Catch the messages when Telegram forwards them here
   app.post(`/bot${process.env.TELEGRAM_BOT_TOKEN}`, (req, res) => {
     bot.processUpdate(req.body);
     res.sendStatus(200);
@@ -214,8 +221,6 @@ app.post("/api/admin/tracking", authMiddleware, async (req, res) => {
         name: item.name || `Item ${index + 1}`
       };
     });
-
-    
 
     // Create the tracking document
     const newTracking = await Tracking.create({
