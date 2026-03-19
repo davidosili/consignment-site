@@ -87,12 +87,18 @@ async function createTracking(event) {
   const token = localStorage.getItem("adminToken");
   if (!token) return alert("You must be logged in!");
 
-  // Collect items
-  const itemId = document.getElementById("itemId").value;
-  const itemName = document.getElementById("itemName").value;
-  const itemDescription = document.getElementById("itemDescription").value;
-  const itemWeight = parseFloat(document.getElementById("itemWeight").value) || 0;
-  const itemQuantity = parseInt(document.getElementById("itemQuantity").value) || 1;
+  // Collect items dynamically
+  const itemRows = document.querySelectorAll("#itemsFieldset .itemRow");
+  const items = Array.from(itemRows).map(row => {
+    return {
+      itemId: row.querySelector("input[name='itemId']").value,
+      name: row.querySelector("input[name='itemName']").value,
+      description: row.querySelector("input[name='itemDescription']").value,
+      weight: parseFloat(row.querySelector("input[name='itemWeight']").value) || 0,
+      quantity: parseInt(row.querySelector("input[name='itemQuantity']").value) || 1,
+      cost: parseFloat(row.querySelector("input[name='itemCost']").value) || 0
+    };
+  });
 
   // Sender & Receiver objects
   const sender = {
@@ -118,7 +124,7 @@ async function createTracking(event) {
     location: document.getElementById("currentLocation").value,
     expectedDelivery: document.getElementById("expectedDelivery").value,
     status: document.getElementById("status").value || "Pending",
-    items
+    items // <-- send all items
   };
 
   try {
@@ -138,7 +144,10 @@ async function createTracking(event) {
 
     const created = await res.json();
     alert(`✅ Tracking created: ${created.trackingNumber}`);
+    // Reset form and leave only one item row
     document.getElementById("createForm").reset();
+    const extraRows = document.querySelectorAll("#itemsFieldset .itemRow:not(:first-child)");
+    extraRows.forEach(r => r.remove());
     loadTracking();
   } catch (err) {
     console.error("Create tracking error:", err);
@@ -279,78 +288,6 @@ function removeItem(button) {
   button.parentElement.remove();
 }
 
-// ------------------ CREATE TRACKING ------------------
-async function createTracking(event) {
-  event.preventDefault();
-  const token = localStorage.getItem("adminToken");
-  if (!token) return alert("You must be logged in!");
-
-  // Collect items dynamically
-// Collect items dynamically
-const itemRows = document.querySelectorAll("#itemsFieldset .itemRow");
-const items = Array.from(itemRows).map(row => {
-  return {
-    itemId: row.querySelector("input[name='itemId']").value,
-    name: row.querySelector("input[name='itemName']").value,
-    description: row.querySelector("input[name='itemDescription']").value,
-    weight: parseFloat(row.querySelector("input[name='itemWeight']").value) || 0,
-    quantity: parseInt(row.querySelector("input[name='itemQuantity']").value) || 1,
-    cost: parseFloat(row.querySelector("input[name='itemCost']").value) || 0
-  };
-});
-
-  const sender = {
-    name: document.getElementById("senderName").value,
-    address: document.getElementById("senderAddress").value,
-    phone: document.getElementById("senderPhone").value,
-    email: document.getElementById("senderEmail").value
-  };
-
-  const receiver = {
-    name: document.getElementById("receiverName").value,
-    address: document.getElementById("receiverAddress").value,
-    phone: document.getElementById("receiverPhone").value,
-    destinationOffice: document.getElementById("receiverOffice").value,
-    email: document.getElementById("receiverEmail").value
-  };
-
-  const data = {
-    sender,
-    receiver,
-    origin: document.getElementById("origin").value,
-    destination: document.getElementById("destination").value,
-    location: document.getElementById("currentLocation").value,
-    expectedDelivery: document.getElementById("expectedDelivery").value,
-    status: document.getElementById("status").value || "Pending",
-    items // <-- send all items
-  };
-
-  try {
-    const res = await fetch(`${API_URL}/api/admin/tracking`, {
-      method: "POST",
-      headers: { 
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}` 
-      },
-      body: JSON.stringify(data)
-    });
-
-    if (!res.ok) {
-      const err = await res.json();
-      return alert("Error: " + (err.error || "Failed to create entry"));
-    }
-
-    const created = await res.json();
-    alert(`✅ Tracking created: ${created.trackingNumber}`);
-    // Reset form and leave only one item row
-    document.getElementById("createForm").reset();
-    const extraRows = document.querySelectorAll("#itemsFieldset .itemRow:not(:first-child)");
-    extraRows.forEach(r => r.remove());
-    loadTracking();
-  } catch (err) {
-    console.error("Create tracking error:", err);
-  }
-}
 
 // Add new item for link generation
 function addLinkItem() {
@@ -358,6 +295,7 @@ function addLinkItem() {
   const div = document.createElement("div");
   div.className = "linkItemRow";
   div.innerHTML = `
+    <input type="text" name="linkItemId" placeholder="Unique Item ID" required>
     <input type="text" name="linkItemName" placeholder="Item Name (e.g. Laptop)" required>
     <input type="text" name="linkItemDesc" placeholder="Description">
     <input type="number" name="linkItemWeight" placeholder="Weight (kg)">
@@ -394,6 +332,7 @@ async function createShipmentLink(event) {
   // Collect all item rows
   const itemRows = document.querySelectorAll("#linkItemsFieldset .linkItemRow");
   const items = Array.from(itemRows).map(row => ({
+    itemId: row.querySelector("input[name='linkItemId']").value,
     name: row.querySelector("input[name='linkItemName']").value,
     description: row.querySelector("input[name='linkItemDesc']").value,
     weight: parseFloat(row.querySelector("input[name='linkItemWeight']").value) || 0,
@@ -540,3 +479,4 @@ function promptChangeDate(trackingNumber, currentDate) {
     }
   };
 }
+
