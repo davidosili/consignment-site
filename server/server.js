@@ -152,6 +152,55 @@ app.get("/api/admin/tracking", authMiddleware, async (req, res) => {
   }
 });
 
+
+// -------- UPDATE EXPECTED DELIVERY --------
+app.put("/api/admin/tracking/delivery/:trackingNumber", authMiddleware, async (req, res) => {
+  try {
+    await connectToDB();
+    const { expectedDelivery } = req.body;
+    
+    const updated = await Tracking.findOneAndUpdate(
+      { trackingNumber: req.params.trackingNumber },
+      { expectedDelivery },
+      { new: true }
+    );
+
+    if (!updated) return res.status(404).json({ error: "Tracking number not found" });
+    
+    res.json(updated);
+  } catch (err) {
+    console.error("Update delivery error:", err);
+    res.status(500).json({ error: "Failed to update delivery date" });
+  }
+});
+
+// -------- UPDATE STATUS & LOCATION --------
+app.put("/api/admin/tracking/number/:trackingNumber", authMiddleware, async (req, res) => {
+  try {
+    await connectToDB();
+    const { status, location } = req.body;
+    
+    const updated = await Tracking.findOneAndUpdate(
+      { trackingNumber: req.params.trackingNumber },
+      { 
+        status, 
+        location,
+        // This automatically adds a new timestamped update to the package history!
+        $push: { updates: { status, location, timestamp: new Date() } } 
+      },
+      { new: true }
+    );
+
+    if (!updated) return res.status(404).json({ error: "Tracking number not found" });
+    
+    res.json(updated);
+  } catch (err) {
+    console.error("Update status error:", err);
+    res.status(500).json({ error: "Failed to update status" });
+  }
+});
+
+
 // -------- CREATE DIRECT TRACKING (POST) --------
 app.post("/api/admin/tracking", authMiddleware, async (req, res) => {
   try {
@@ -165,6 +214,8 @@ app.post("/api/admin/tracking", authMiddleware, async (req, res) => {
         name: item.name || `Item ${index + 1}`
       };
     });
+
+    
 
     // Create the tracking document
     const newTracking = await Tracking.create({
