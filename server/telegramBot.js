@@ -15,13 +15,18 @@ console.log("🌐 Telegram bot initialized");
 async function linkUserFromApi(tempId, chatId, username) {
   if (!tempId || !chatId) throw new Error("tempId and chatId required");
 
-  // Ensure DB connected (useful if running in serverless/Vercel)
+  // Ensure DB connected (optimized for Vercel/Serverless)
   if (mongoose.connection.readyState !== 1) {
-    await mongoose.connect(process.env.MONGO_URI);
+    console.log("⏳ Connecting to MongoDB...");
+    await mongoose.connect(process.env.MONGO_URI, {
+      serverSelectionTimeoutMS: 5000 // Stop waiting after 5 seconds
+    });
     console.log("✅ MongoDB connected (linkUserFromApi)");
   }
 
-  let user = await TelegramUser.findOne({ chatId });
+  // Find user with a strict time limit to prevent Vercel 504 errors
+  let user = await TelegramUser.findOne({ chatId }).maxTimeMS(5000);
+  
   if (user) {
     if (!user.tempIds.includes(tempId)) {
       user.tempIds.push(tempId);
