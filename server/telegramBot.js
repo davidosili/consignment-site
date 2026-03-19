@@ -15,16 +15,14 @@ console.log("🌐 Telegram bot initialized");
 async function linkUserFromApi(tempId, chatId, username) {
   if (!tempId || !chatId) throw new Error("tempId and chatId required");
 
-  // Ensure DB connected (optimized for Vercel/Serverless)
   if (mongoose.connection.readyState !== 1) {
     console.log("⏳ Connecting to MongoDB...");
     await mongoose.connect(process.env.MONGO_URI, {
-      serverSelectionTimeoutMS: 5000 // Stop waiting after 5 seconds
+      serverSelectionTimeoutMS: 5000 
     });
     console.log("✅ MongoDB connected (linkUserFromApi)");
   }
 
-  // Find user with a strict time limit to prevent Vercel 504 errors
   let user = await TelegramUser.findOne({ chatId }).maxTimeMS(5000);
   
   if (user) {
@@ -41,7 +39,7 @@ async function linkUserFromApi(tempId, chatId, username) {
 }
 
 // =====================
-// Send message to user by tempId (For future status updates)
+// Send message to user by tempId
 // =====================
 async function sendMessageToUser(tempId, message) {
   const user = await TelegramUser.findOne({ tempIds: tempId });
@@ -50,12 +48,61 @@ async function sendMessageToUser(tempId, message) {
 }
 
 // =====================
-// /start command (Triggered when user clicks the link on the site)
+// Message Handling (Forwarding & Replying)
+// =====================
+bot.on('message', async (msg) => {
+  const chatId = msg.chat.id;
+  const text = msg.text;
+
+  // 1. Ignore /start commands as they are handled by bot.onText below
+  if (text && text.startsWith('/start')) return;
+
+  // 2. IF MESSAGE IS FROM A USER -> FORWARD TO ADMIN
+  if (chatId !== adminId) {
+    try {
+      // Forward the original message so Admin can see context
+      await bot.forwardMessage(adminId, chatId, msg.message_id);
+      
+      // Fallback: Send a small text block with the ID in case Admin needs to reply manually 
+      // or if the user's privacy settings hide their "forward_from" info.
+      await bot.sendMessage(adminId, `🆔 User ID: \`${chatId}\` (Reply to the message above to chat)`);
+    } catch (err) {
+      console.error("❌ Forwarding failed:", err);
+    }
+  }
+
+  // 3. IF MESSAGE IS FROM ADMIN -> CHECK IF REPLIED TO A FORWARD
+  else if (chatId === adminId && msg.reply_to_message) {
+    let targetUserChatId;
+
+    // Check if it's a direct forward
+    if (msg.reply_to_message.forward_from) {
+      targetUserChatId = msg.reply_to_message.forward_from.id;
+    } 
+    // If privacy settings hide 'forward_from', try to extract ID from our fallback text
+    else if (msg.reply_to_message.text && msg.reply_to_message.text.includes('User ID:')) {
+      const match = msg.reply_to_message.text.match(/User ID: (\d+)/);
+      if (match) targetUserChatId = match[1];
+    }
+
+    if (targetUserChatId) {
+      try {
+        await bot.sendMessage(targetUserChatId, text);
+        await bot.sendMessage(adminId, "✅ Reply sent to user.");
+      } catch (err) {
+        await bot.sendMessage(adminId, `❌ Failed to send: ${err.message}`);
+      }
+    }
+  }
+});
+
+// =====================
+// /start command
 // =====================
 bot.onText(/^\/start(?:\s+(.+))?/, async (msg, match) => {
   try {
     const chatId = msg.chat.id;
-    const tempId = match[1]; // TMP-XXXX from the deeplink
+    const tempId = match[1]; 
     const username = msg.from.username ? `@${msg.from.username}` : msg.from.first_name || "User";
 
     console.log("🚀 /start triggered:", { chatId, tempId });
@@ -64,16 +111,13 @@ bot.onText(/^\/start(?:\s+(.+))?/, async (msg, match) => {
       return bot.sendMessage(chatId, "👋 Welcome to Rapid Routes! Please use your specific shipment link to get started.");
     }
 
-    // 1. Link the user in the database
     await linkUserFromApi(tempId, chatId, username);
 
-    // 2. Send success message to the user
     await bot.sendMessage(chatId,
       `👋 Hi ${username}! We’ve successfully linked your Telegram.\n\n` +
       `Our team will reach out to you here regarding your parcel (Tracking ID: ${tempId}).`
     );
 
-    // 3. Notify admin that a user connected their Telegram
     await bot.sendMessage(adminId,
       `🔗 User Linked via Telegram
 ━━━━━━━━━━━━━━━
@@ -84,7 +128,7 @@ bot.onText(/^\/start(?:\s+(.+))?/, async (msg, match) => {
 
   } catch (err) {
     console.error("❌ /start error:", err);
-    bot.sendMessage(msg.chat.id, "❌ Failed to link your Tracking ID. Please try clicking the link on the website again.");
+    bot.sendMessage(msg.chat.id, "❌ Failed to link your Tracking ID.");
   }
 });
 
