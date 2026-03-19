@@ -323,6 +323,26 @@ app.delete("/api/admin/reject-shipment/:id", authMiddleware, async (req, res) =>
   }
 });
 
+// -------- DELETE TRACKING ENTRY --------
+app.delete("/api/admin/tracking/:id", authMiddleware, async (req, res) => {
+  try {
+    await connectToDB();
+    
+    // Find the tracking entry by its MongoDB ID and delete it
+    const deleted = await Tracking.findByIdAndDelete(req.params.id);
+    
+    if (!deleted) {
+      return res.status(404).json({ error: "Tracking entry not found" });
+    }
+    
+    res.json({ message: "Tracking entry deleted successfully" });
+  } catch (err) {
+    console.error("Delete tracking error:", err);
+    res.status(500).json({ error: "Failed to delete tracking entry" });
+  }
+});
+
+
 // -------- CREATE SHIPMENT LINK --------
 app.post("/api/admin/shipment-link", authMiddleware, async (req, res) => {
   try {
