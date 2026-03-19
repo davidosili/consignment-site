@@ -141,7 +141,7 @@ app.post("/api/admin/login", async (req, res) => {
   }
 });
 
-// -------- ADMIN TRACKING --------
+// -------- ADMIN TRACKING (GET) --------
 app.get("/api/admin/tracking", authMiddleware, async (req, res) => {
   try {
     await connectToDB();
@@ -149,6 +149,44 @@ app.get("/api/admin/tracking", authMiddleware, async (req, res) => {
     res.json(data);
   } catch {
     res.status(500).json({ error: "Failed" });
+  }
+});
+
+// -------- CREATE DIRECT TRACKING (POST) --------
+app.post("/api/admin/tracking", authMiddleware, async (req, res) => {
+  try {
+    await connectToDB();
+
+    // SAFETY FALLBACK: Ensure all items have an itemId and name
+    const safeItems = (req.body.items || []).map((item, index) => {
+      return {
+        ...item,
+        itemId: item.itemId || "ITEM-" + crypto.randomUUID().slice(0, 8),
+        name: item.name || `Item ${index + 1}`
+      };
+    });
+
+    // Create the tracking document
+    const newTracking = await Tracking.create({
+      sender: req.body.sender,
+      receiver: req.body.receiver,
+      origin: req.body.origin || req.body.sender?.address || "Unknown",
+      destination: req.body.destination || req.body.receiver?.address || "Unknown",
+      location: req.body.location || "Warehouse",
+      status: req.body.status || "Pending",
+      expectedDelivery: req.body.expectedDelivery,
+      items: safeItems, 
+      updates: [{ 
+        status: req.body.status || "Created", 
+        location: req.body.location || "Warehouse",
+        timestamp: new Date() 
+      }],
+    });
+
+    res.status(201).json(newTracking);
+  } catch (err) {
+    console.error("Error creating direct tracking:", err);
+    res.status(500).json({ error: "Failed to create tracking entry" });
   }
 });
 
@@ -172,13 +210,14 @@ app.post("/api/admin/approve-shipment/:id", authMiddleware, async (req, res) => 
     const temp = await TempShipment.findById(req.params.id);
     if (!temp) return res.status(404).json({ error: "Not found" });
 
-    // SAFETY FALLBACK: Ensure all items have an itemId so MongoDB doesn't crash on old data
-    const safeItems = (temp.items || []).map(item => {
+    // SAFETY FALLBACK: Ensure all items have an itemId AND a name so Mongoose doesn't crash on old data
+    const safeItems = (temp.items || []).map((item, index) => {
       // If it's a mongoose subdocument, convert it to a standard object first
       const itemObj = item.toObject ? item.toObject() : item;
       return {
         ...itemObj,
-        itemId: itemObj.itemId || "ITEM-" + crypto.randomUUID().slice(0, 8) 
+        itemId: itemObj.itemId || "ITEM-" + crypto.randomUUID().slice(0, 8),
+        name: itemObj.name || `Item ${index + 1}` // <-- ADDED THIS: Fallback name if missing
       };
     });
 
@@ -284,4 +323,3 @@ app.get("/", (req, res) =>
 app.get("/ping", (req, res) => res.send("pong"));
 
 module.exports = app;
-
