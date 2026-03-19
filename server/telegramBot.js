@@ -5,7 +5,6 @@ const TelegramUser = require('./models/TelegramUser');
 
 const token = process.env.TELEGRAM_BOT_TOKEN;
 const adminId = parseInt(process.env.TELEGRAM_ADMIN_ID, 10);
-const BASE_URL = process.env.BASE_URL || "https://www.rapidroutesltd.com";
 
 const bot = new TelegramBot(token);
 console.log("🌐 Telegram bot initialized");
@@ -16,7 +15,7 @@ console.log("🌐 Telegram bot initialized");
 async function linkUserFromApi(tempId, chatId, username) {
   if (!tempId || !chatId) throw new Error("tempId and chatId required");
 
-  // Ensure DB connected
+  // Ensure DB connected (useful if running in serverless/Vercel)
   if (mongoose.connection.readyState !== 1) {
     await mongoose.connect(process.env.MONGO_URI);
     console.log("✅ MongoDB connected (linkUserFromApi)");
@@ -24,7 +23,9 @@ async function linkUserFromApi(tempId, chatId, username) {
 
   let user = await TelegramUser.findOne({ chatId });
   if (user) {
-    if (!user.tempIds.includes(tempId)) user.tempIds.push(tempId);
+    if (!user.tempIds.includes(tempId)) {
+      user.tempIds.push(tempId);
+    }
   } else {
     user = new TelegramUser({ chatId, username, tempIds: [tempId] });
   }
@@ -35,40 +36,41 @@ async function linkUserFromApi(tempId, chatId, username) {
 }
 
 // =====================
-// Send message to user by tempId
+// Send message to user by tempId (For future status updates)
 // =====================
 async function sendMessageToUser(tempId, message) {
   const user = await TelegramUser.findOne({ tempIds: tempId });
-  if (!user) throw new Error("User not linked to Telegram");
+  if (!user) throw new Error(`User not linked to Telegram for Temp ID: ${tempId}`);
   return bot.sendMessage(user.chatId, message);
 }
 
 // =====================
-// /start command
+// /start command (Triggered when user clicks the link on the site)
 // =====================
 bot.onText(/^\/start(?:\s+(.+))?/, async (msg, match) => {
   try {
     const chatId = msg.chat.id;
-    const tempId = match[1]; // TMP-XXXX
+    const tempId = match[1]; // TMP-XXXX from the deeplink
     const username = msg.from.username ? `@${msg.from.username}` : msg.from.first_name || "User";
 
     console.log("🚀 /start triggered:", { chatId, tempId });
 
     if (!tempId) {
-      return bot.sendMessage(chatId, "👋 Welcome! Use your shipment link to start.");
+      return bot.sendMessage(chatId, "👋 Welcome to Rapid Routes! Please use your specific shipment link to get started.");
     }
 
+    // 1. Link the user in the database
     await linkUserFromApi(tempId, chatId, username);
 
-    // Auto-message with receiver link
+    // 2. Send success message to the user
     await bot.sendMessage(chatId,
-      `💙 Hello ${username}!\nTracking ID: ${tempId}\n` +
-      `Complete your details here:\n${BASE_URL}/receiver.html?id=${tempId}`
+      `👋 Hi ${username}! We’ve successfully linked your Telegram.\n\n` +
+      `Our team will reach out to you here regarding your parcel (Tracking ID: ${tempId}).`
     );
 
-    // Notify admin
+    // 3. Notify admin that a user connected their Telegram
     await bot.sendMessage(adminId,
-      `📩 New Telegram Connection
+      `🔗 User Linked via Telegram
 ━━━━━━━━━━━━━━━
 🆔 Temp ID: ${tempId}
 👤 Username: ${username}
@@ -77,7 +79,7 @@ bot.onText(/^\/start(?:\s+(.+))?/, async (msg, match) => {
 
   } catch (err) {
     console.error("❌ /start error:", err);
-    bot.sendMessage(msg.chat.id, "❌ Failed to link your Temp ID. Try again.");
+    bot.sendMessage(msg.chat.id, "❌ Failed to link your Tracking ID. Please try clicking the link on the website again.");
   }
 });
 
