@@ -81,8 +81,8 @@ bot.on('message', async (msg) => {
     } 
     // If privacy settings hide 'forward_from', try to extract ID from our fallback text
     else if (msg.reply_to_message.text && msg.reply_to_message.text.includes('User ID:')) {
-      const match = msg.reply_to_message.text.match(/User ID: (\d+)/);
-      if (match) targetUserChatId = match[1];
+      const match = msg.reply_to_message.text.match(/User ID: \`?(\d+)\`?/);
+      if (match) targetUserChatId = parseInt(match[1], 10);
     }
 
     if (targetUserChatId) {
@@ -90,8 +90,13 @@ bot.on('message', async (msg) => {
         await bot.sendMessage(targetUserChatId, text);
         await bot.sendMessage(adminId, "✅ Reply sent to user.");
       } catch (err) {
+        console.error(`❌ Failed to send reply to ${targetUserChatId}:`, err);
         await bot.sendMessage(adminId, `❌ Failed to send: ${err.message}`);
       }
+    } else {
+      // Admin needs to know the reply failed to extract a user ID
+      await bot.sendMessage(adminId, "⚠️ Could not extract User ID from message. Please ensure you're replying to a forwarded customer message.");
+      console.warn("⚠️ Admin reply failed: No valid targetUserChatId extracted from:", msg.reply_to_message);
     }
   }
 });
