@@ -51,6 +51,19 @@ async function connectToDB() {
   if (cachedDb) return cachedDb;
   cachedDb = await mongoose.connect(process.env.MONGO_URI);
   console.log("✅ MongoDB connected");
+  
+  // Drop problematic index if it exists
+  try {
+    const trackingCollection = mongoose.connection.collection("trackings");
+    const indexes = await trackingCollection.getIndexes();
+    if (indexes["items.itemId_1"]) {
+      await trackingCollection.dropIndex("items.itemId_1");
+      console.log("✅ Dropped problematic index: items.itemId_1");
+    }
+  } catch (err) {
+    console.warn("⚠️ Could not drop index (may already be gone):", err.message);
+  }
+  
   return cachedDb;
 }
 
