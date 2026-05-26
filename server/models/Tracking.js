@@ -21,7 +21,7 @@ const updateSchema = new mongoose.Schema({
 });
 
 const itemSchema = new mongoose.Schema({
-  itemId: { type: String, required: true, unique: true },
+  itemId: { type: String, required: true },
   name: { type: String, required: true },
   description: { type: String },
   weight: { type: Number },
